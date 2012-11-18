@@ -29,7 +29,7 @@ var Crossword = mongoose.model('Crossword', CrosswordSchema);
 var Room = mongoose.model('Room', RoomSchema);
 
 // Connect to db
-require('./db')(mongoose);
+mongoose = require('./db')(mongoose);
 
 // Import users
 var users = require('./users')(passport, passportMongoose, User);
