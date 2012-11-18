@@ -1,6 +1,6 @@
 {
   "name": "lexicube",
-  "version": null,
+  "version": "0.1",
   "description": "LexiCube",
   "main": "app.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:nko3/breakfast-club.git"
+    "url": "git@github.com:dfmcphee/lexicube.git"
   },
   "dependencies": {
     "express": "3.0.0rc5",

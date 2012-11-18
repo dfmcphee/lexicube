@@ -1,4 +1,4 @@
-module.exports = function(Schema){
+module.exports = function(Schema, ObjectId){
 	var RoomSchema = new Schema({
 		players: Number,
 		front: ObjectId,

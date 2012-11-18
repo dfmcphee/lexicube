@@ -22,7 +22,7 @@ ObjectId = Schema.ObjectId;
 // Create schemas
 var UserSchema = require('./models/user')(Schema);
 var CrosswordSchema = require('./models/crossword')(Schema);
-var RoomSchema = require('./models/room')(Schema);
+var RoomSchema = require('./models/room')(Schema, ObjectId);
 
 var User = mongoose.model('User', UserSchema);
 var Crossword = mongoose.model('Crossword', CrosswordSchema);
