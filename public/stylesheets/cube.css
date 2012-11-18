@@ -1,0 +1,348 @@
+@import 'general_foundicons.css';
+/*
+ *	
+ *	Cube rotation CSS is a modified version of David DeSandro's:
+ *	http://desandro.github.com/3dtransforms/docs/cube.html
+ *
+ */
+#front {
+  -webkit-transform: rotateY(0deg) translateZ(255px);
+  -moz-transform: rotateY(0deg) translateZ(255px);
+  -ms-transform: rotateY(0deg) translateZ(255px);
+  -o-transform: rotateY(0deg) translateZ(255px);
+  transform: rotateY(0deg) translateZ(255px);
+}
+#back {
+  -webkit-transform: rotateX(180deg) translateZ(255px);
+  -moz-transform: rotateX(180deg) translateZ(255px);
+  -ms-transform: rotateX(180deg) translateZ(255px);
+  -o-transform: rotateX(180deg) translateZ(255px);
+  transform: rotateX(180deg) translateZ(255px);
+}
+#right {
+  -webkit-transform: rotateY(90deg) translateZ(255px);
+  -moz-transform: rotateY(90deg) translateZ(255px);
+  -ms-transform: rotateY(90deg) translateZ(255px);
+  -o-transform: rotateY(90deg) translateZ(255px);
+  transform: rotateY(90deg) translateZ(255px);
+}
+#left {
+  -webkit-transform: rotateY(-90deg) translateZ(255px);
+  -moz-transform: rotateY(-90deg) translateZ(255px);
+  -ms-transform: rotateY(-90deg) translateZ(255px);
+  -o-transform: rotateY(-90deg) translateZ(255px);
+  transform: rotateY(-90deg) translateZ(255px);
+}
+#top {
+  -webkit-transform: rotateX(90deg) translateZ(255px);
+  -moz-transform: rotateX(90deg) translateZ(255px);
+  -ms-transform: rotateX(90deg) translateZ(255px);
+  -o-transform: rotateX(90deg) translateZ(255px);
+  transform: rotateX(90deg) translateZ(255px);
+}
+#bottom {
+  -webkit-transform: rotateX(-90deg) translateZ(255px);
+  -moz-transform: rotateX(-90deg) translateZ(255px);
+  -ms-transform: rotateX(-90deg) translateZ(255px);
+  -o-transform: rotateX(-90deg) translateZ(255px);
+  transform: rotateX(-90deg) translateZ(255px);
+}
+#cube.show-front {
+  -webkit-transform: translateZ(-255px) rotateY(0deg);
+  -moz-transform: translateZ(-255px) rotateY(0deg);
+  -ms-transform: translateZ(-255px) rotateY(0deg);
+  -o-transform: translateZ(-255px) rotateY(0deg);
+  transform: translateZ(-255px) rotateY(0deg);
+}
+#cube.show-back {
+  -webkit-transform: translateZ(-255px) rotateX(-180deg);
+  -moz-transform: translateZ(-255px) rotateX(-180deg);
+  -ms-transform: translateZ(-255px) rotateX(-180deg);
+  -o-transform: translateZ(-255px) rotateX(-180deg);
+  transform: translateZ(-255px) rotateX(-180deg);
+}
+#cube.show-right {
+  -webkit-transform: translateZ(-255px) rotateY(-90deg);
+  -moz-transform: translateZ(-255px) rotateY(-90deg);
+  -ms-transform: translateZ(-255px) rotateY(-90deg);
+  -o-transform: translateZ(-255px) rotateY(-90deg);
+  transform: translateZ(-255px) rotateY(-90deg);
+}
+#cube.show-left {
+  -webkit-transform: translateZ(-255px) rotateY(90deg);
+  -moz-transform: translateZ(-255px) rotateY(90deg);
+  -ms-transform: translateZ(-255px) rotateY(90deg);
+  -o-transform: translateZ(-255px) rotateY(90deg);
+  transform: translateZ(-255px) rotateY(90deg);
+}
+#cube.show-top {
+  -webkit-transform: translateZ(-255px) rotateX(-90deg);
+  -moz-transform: translateZ(-255px) rotateX(-90deg);
+  -ms-transform: translateZ(-255px) rotateX(-90deg);
+  -o-transform: translateZ(-255px) rotateX(-90deg);
+  transform: translateZ(-255px) rotateX(-90deg);
+}
+#cube.show-bottom {
+  -webkit-transform: translateZ(-255px) rotateX(90deg);
+  -moz-transform: translateZ(-255px) rotateX(90deg);
+  -ms-transform: translateZ(-255px) rotateX(90deg);
+  -o-transform: translateZ(-255px) rotateX(90deg);
+  transform: translateZ(-255px) rotateX(90deg);
+}
+.unselectable {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+body {
+  background: url(../images/bg.png) #09abda;
+  margin: 0;
+  padding: 8px 25px;
+  font: 14px Helvetica, Arial, sans-serif;
+  min-width: 1280px;
+}
+* {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.topBar {
+  width: 100%;
+  padding-left: 1em;
+}
+#lexiLogo {
+  float: left;
+  margin-left: 8px;
+}
+#nodeVote {
+  float: left;
+  clear: left;
+  margin-top: 12px;
+}
+#logout {
+  position: absolute;
+  top: 15px;
+  right: 60px;
+}
+.introInstructions {
+  float: left;
+  background-color: white;
+  border: 2px solid black;
+  padding: 40px;
+  width: 400px;
+  margin-top: 26px;
+}
+.introInstructions h1 {
+  padding: 0;
+  margin: 0;
+}
+.introInstructions .correctWord {
+  color: green;
+  font-weight: bold;
+}
+.introCube {
+  float: left;
+  margin-right: 60px;
+}
+#wrapper {
+  width: 1000px;
+  height: 700px;
+  margin: 10px auto;
+  position: relative;
+}
+#wrapper #faceInfo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: white;
+  width: 180px;
+  color: black;
+  border: 2px solid black;
+  font-size: 16px;
+  line-height: 2em;
+  padding-left: 12px;
+  height: 34px;
+}
+#wrapper #faceInfo .puzzleDate {
+  float: right;
+  padding-right: 8px;
+}
+#wrapper #threeDspace {
+  width: 510px;
+  height: 510px;
+  position: absolute;
+  top: 65px;
+  left: 60px;
+  float: left;
+  -webkit-perspective: 1000px;
+  -moz-perspective: 1000px;
+  -o-perspective: 1000px;
+  perspective: 1000px;
+}
+#wrapper #flipRight,
+#wrapper #flipLeft,
+#wrapper #flipUp,
+#wrapper #flipDown {
+  position: absolute;
+  cursor: pointer;
+  font-size: 3em;
+  text-shadow: 2px 2px #000;
+  color: #FFF;
+  -webkit-transition: color 0.5s;
+  transition: color 0.5s;
+}
+#wrapper #flipRight:hover,
+#wrapper #flipLeft:hover,
+#wrapper #flipUp:hover,
+#wrapper #flipDown:hover,
+#wrapper #flipRight:focus,
+#wrapper #flipLeft:focus,
+#wrapper #flipUp:focus,
+#wrapper #flipDown:focus,
+#wrapper #flipRight:active,
+#wrapper #flipLeft:active,
+#wrapper #flipUp:active,
+#wrapper #flipDown:active {
+  color: #bbe;
+}
+#wrapper #flipRight {
+  left: 590px;
+  top: 290px;
+}
+#wrapper #flipLeft {
+  left: 0;
+  top: 290px;
+}
+#wrapper #flipUp {
+  left: 290px;
+  top: 0;
+}
+#wrapper #flipDown {
+  left: 290px;
+  top: 590px;
+}
+#clue {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  float: left;
+  width: 640px;
+  background-color: white;
+  color: black;
+  border: 2px solid black;
+  font-size: 16px;
+  line-height: 34px;
+  padding-left: 12px;
+  height: 38px;
+  overflow-y: auto;
+}
+#chat-window {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: black;
+  background-color: white;
+  height: 700px;
+  border: 2px solid black;
+  width: 320px;
+}
+#chat-window .user-list {
+  float: left;
+  width: 100%;
+  border-bottom: 2px solid black;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 140px;
+}
+#chat-window .user-list #users div {
+  padding: 2px 8px;
+}
+#chat-window #conversation {
+  float: left;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 510px;
+  padding: 10px;
+}
+#chat-window #input {
+  float: left;
+  width: 100%;
+  border-top: 2px solid black;
+  overflow: none;
+  padding: 10px;
+  clear: left;
+}
+#cube {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  -webkit-transform: translateZ(-255px);
+  -moz-transform: translateZ(-255px);
+  -o-transform: translateZ(-255px);
+  transform: translateZ(-255px);
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  -o-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-transition: -webkit-transform 1.2s;
+  -moz-transition: -moz-transform 1.2s;
+  -o-transition: -o-transform 1.2s;
+  transition: transform 1.2s;
+}
+#cube .face {
+  width: 512px;
+  height: 512px;
+  display: block;
+  position: absolute;
+  border: 1px solid black;
+  background-color: black;
+  font-size: 6em;
+  color: #000;
+  text-shadow: none;
+}
+#cube .face .square {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border: 1px solid black;
+  background-color: white;
+  float: left;
+  overflow: hidden;
+  font-size: 32px;
+  line-height: 1em;
+  text-align: center;
+  text-transform: uppercase;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+#cube .face .square.black {
+  background-color: black;
+}
+#cube .face .square.selected {
+  border-color: #444;
+}
+#cube .face .square .clueNum {
+  position: absolute;
+  top: -8px;
+  left: 2px;
+  font-size: 9px;
+}
+#cube .face .square .correctWord {
+  color: green;
+}
+#cube .face .square .incorrectWord {
+  color: red;
+}
+#show-buttons {
+  display: none;
+  margin-top: 120px;
+  clear: left;
+}
