@@ -1,0 +1,285 @@
+/* DEMO 4 */
+
+.loading-animation body {
+    background-image: url(../images/bedge_grunge.png);
+}
+
+.loading-animation .wrapper {
+	font-size: 25px; /* 1em */
+
+    width: 8em;
+    height: 8em;
+    position: relative;
+    margin: 100px auto;
+
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 1em dashed rgba(138,189,195,0.5);
+    box-shadow: 
+    	inset 0 0 2em rgba(255,255,255,0.3),
+    	0 0 0 0.7em rgba(255,255,255,0.3);
+
+    line-height: 6em;
+    text-align: center;
+    font-family: 'Racing Sans One', "HelveticaNeue-Light","Helvetica Neue Light","Helvetica Neue","Helvetica","Arial","Lucida Grande",sans-serif;
+    color: #444;
+    text-shadow: 0 .04em rgba(255,255,255,0.9);
+
+    -webkit-animation: steam 3.5s linear infinite;
+    -moz-animation: steam 3.5s linear infinite;
+    -ms-animation: steam 3.5s linear infinite;
+    -o-animation: steam 3.5s linear infinite;
+    animation: steam 3.5s linear infinite;
+}
+
+.loading-animation .wrapper:after, 
+.loading-animation .wrapper:before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    z-index: -1;
+    border-radius: inherit;
+    box-shadow: inset 0 0 2em rgba(255,255,255,0.3);
+    border: 1em dashed rgba(138,189,195,0.2);
+}
+
+.loading-animation .wrapper:before {
+    top: 1em; bottom: 1em; right: 1em; left: 1em; 
+    border: 1em dashed rgba(138,189,195,0.4);
+}
+
+.loading-animation .inner {
+    width: 100%;
+    height: 100%;
+    -webkit-animation: steam 3.5s linear reverse infinite;
+    -moz-animation: steam 3.5s linear reverse infinite;
+    -ms-animation: steam 3.5s linear reverse infinite;
+    -o-animation: steam 3.5s linear reverse infinite;
+    animation: steam 3.5s linear reverse infinite;
+}
+
+.loading-animation .inner span {
+    display: inline-block;
+
+    -webkit-animation: loading-animation-1 1.5s ease-out infinite;
+    -moz-animation: loading-animation-1 1.5s ease-out infinite;
+    -ms-animation: loading-animation-1 1.5s ease-out infinite;
+    -o-animation: loading-animation-1 1.5s ease-out infinite;
+    animation: loading-animation-1 1.5s ease-out infinite;
+}
+
+.loading-animation .inner span:nth-child(1)  { 
+	-webkit-animation-name: loading-animation-1;
+	-moz-animation-name: loading-animation-1;
+	-ms-animation-name: loading-animation-1;
+	-o-animation-name: loading-animation-1;
+	animation-name: loading-animation-1;
+}
+
+.loading-animation .inner span:nth-child(2)  { 
+	-webkit-animation-name: loading-animation-2;
+	-moz-animation-name: loading-animation-2;
+	-ms-animation-name: loading-animation-2;
+	-o-animation-name: loading-animation-2;
+	animation-name: loading-animation-2;
+}
+
+.loading-animation .inner span:nth-child(3)  { 
+	-webkit-animation-name: loading-animation-3;
+	-moz-animation-name: loading-animation-3;
+	-ms-animation-name: loading-animation-3;
+	-o-animation-name: loading-animation-3;
+	animation-name: loading-animation-3;
+}
+
+.loading-animation .inner span:nth-child(4)  { 
+	-webkit-animation-name: loading-animation-4;
+	-moz-animation-name: loading-animation-4;
+	-ms-animation-name: loading-animation-4;
+	-o-animation-name: loading-animation-4;
+	animation-name: loading-animation-4;
+}
+
+.loading-animation .inner span:nth-child(5)  { 
+	-webkit-animation-name: loading-animation-5;
+	-moz-animation-name: loading-animation-5;
+	-ms-animation-name: loading-animation-5;
+	-o-animation-name: loading-animation-5;
+	animation-name: loading-animation-5;
+}
+
+.loading-animation .inner span:nth-child(6)  { 
+	-webkit-animation-name: loading-animation-6;
+	-moz-animation-name: loading-animation-6;
+	-ms-animation-name: loading-animation-6;
+	-o-animation-name: loading-animation-6;
+	animation-name: loading-animation-6;
+}
+
+.loading-animation .inner span:nth-child(7)  { 
+	-webkit-animation-name: loading-animation-7;
+	-moz-animation-name: loading-animation-7;
+	-ms-animation-name: loading-animation-7;
+	-o-animation-name: loading-animation-7;
+	animation-name: loading-animation-7;
+}
+
+@-webkit-keyframes steam {
+    to { -webkit-transform: rotate(360deg); }
+}
+
+@-moz-keyframes steam {
+    to { -moz-transform: rotate(360deg); }
+}
+
+@-ms-keyframes steam {
+    to { -ms-transform: rotate(360deg); }
+}
+
+@-o-keyframes steam {
+    to { -o-transform: rotate(360deg); }
+}
+
+@keyframes steam {
+    to { transform: rotate(360deg); }
+}
+
+@-webkit-keyframes loading-animation-1 {
+    14.28% { opacity: 0.3; }
+}
+
+@-webkit-keyframes loading-animation-2 {
+    28.57% { opacity: 0.3; }
+}
+
+@-webkit-keyframes loading-animation-3 {
+    42.86% { opacity: 0.3; }
+}
+
+@-webkit-keyframes loading-animation-4 {
+    57.14% { opacity: 0.3; }
+}
+
+@-webkit-keyframes loading-animation-5 {
+    71.43% { opacity: 0.3; }
+}
+
+@-webkit-keyframes loading-animation-6 {
+    85.71% { opacity: 0.3; }
+}
+
+@-webkit-keyframes loading-animation-7 {
+    100% { opacity: 0.3; }
+}
+
+@-moz-keyframes loading-animation-1 {
+    14.28% { opacity: 0.3; }
+}
+
+@-moz-keyframes loading-animation-2 {
+    28.57% { opacity: 0.3; }
+}
+
+@-moz-keyframes loading-animation-3 {
+    42.86% { opacity: 0.3; }
+}
+
+@-moz-keyframes loading-animation-4 {
+    57.14% { opacity: 0.3; }
+}
+
+@-moz-keyframes loading-animation-5 {
+    71.43% { opacity: 0.3; }
+}
+
+@-moz-keyframes loading-animation-6 {
+    85.71% { opacity: 0.3; }
+}
+
+@-moz-keyframes loading-animation-7 {
+    100% { opacity: 0.3; }
+}
+
+@-ms-keyframes loading-animation-1 {
+    14.28% { opacity: 0.3; }
+}
+
+@-ms-keyframes loading-animation-2 {
+    28.57% { opacity: 0.3; }
+}
+
+@-ms-keyframes loading-animation-3 {
+    42.86% { opacity: 0.3; }
+}
+
+@-ms-keyframes loading-animation-4 {
+    57.14% { opacity: 0.3; }
+}
+
+@-ms-keyframes loading-animation-5 {
+    71.43% { opacity: 0.3; }
+}
+
+@-ms-keyframes loading-animation-6 {
+    85.71% { opacity: 0.3; }
+}
+
+@-ms-keyframes loading-animation-7 {
+    100% { opacity: 0.3; }
+}
+
+@-o-keyframes loading-animation-1 {
+    14.28% { opacity: 0.3; }
+}
+
+@-o-keyframes loading-animation-2 {
+    28.57% { opacity: 0.3; }
+}
+
+@-o-keyframes loading-animation-3 {
+    42.86% { opacity: 0.3; }
+}
+
+@-o-keyframes loading-animation-4 {
+    57.14% { opacity: 0.3; }
+}
+
+@-o-keyframes loading-animation-5 {
+    71.43% { opacity: 0.3; }
+}
+
+@-o-keyframes loading-animation-6 {
+    85.71% { opacity: 0.3; }
+}
+
+@-o-keyframes loading-animation-7 {
+    100% { opacity: 0.3; }
+}
+
+@keyframes loading-animation-1 {
+    14.28% { opacity: 0.3; }
+}
+
+@keyframes loading-animation-2 {
+    28.57% { opacity: 0.3; }
+}
+
+@keyframes loading-animation-3 {
+    42.86% { opacity: 0.3; }
+}
+
+@keyframes loading-animation-4 {
+    57.14% { opacity: 0.3; }
+}
+
+@keyframes loading-animation-5 {
+    71.43% { opacity: 0.3; }
+}
+
+@keyframes loading-animation-6 {
+    85.71% { opacity: 0.3; }
+}
+
+@keyframes loading-animation-7 {
+    100% { opacity: 0.3; }
+}

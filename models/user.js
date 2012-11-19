@@ -1,9 +1,10 @@
-module.exports = function(Schema){
+module.exports = function(Schema, ObjectId){
 	var UserSchema = new Schema({
 		username: String,
 		score: Number,
 		online: Boolean,
-		color: String
+		color: String,
+		currentRoom: ObjectId
 	});
 	return UserSchema;
 };

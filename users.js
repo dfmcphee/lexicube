@@ -1,4 +1,4 @@
-module.exports = function(passport, passportMongoose, User){
+module.exports = function(passport, passportMongoose, mongoose, User){
 	var users = {};
 
 	// Simple route middleware to ensure user is authenticated.
@@ -28,7 +28,7 @@ module.exports = function(passport, passportMongoose, User){
 
 	// Enable the Passport-Mongoose authenticiation strategy.
 	// Uses reasonable defaults that can be overridden.
-	passport.use(new passportMongoose.Strategy());
+	passport.use(new passportMongoose.Strategy({connection: mongoose}));
 
 	return users;
 };

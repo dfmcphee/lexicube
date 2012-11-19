@@ -31,6 +31,13 @@ socket.on('updatechat', function (username, data) {
 	convo.scrollTop(convo.prop('scrollHeight'));
 });
 
+// animation for loading game
+socket.on('loading', function() {
+	$('<div>').addClass('loading-animation')
+		.append('<div class="wrapper"><div class="inner"><span>L</span><span>o</span><span>a</span><span>d</span><span>i</span><span>n</span><span>g</span></div>')
+		.appendTo('.face');
+});
+
 // listener, whenever the server emits 'updateusers', this updates the username list
 socket.on('updateusers', function(data) {
 	$('#users').empty();
@@ -42,23 +49,28 @@ socket.on('updateusers', function(data) {
 });
 
 socket.on('updategrid', function(data, room) {
-	$('#' + data.side)
-		.empty()
-		.data('data', data);
-	grid = data.grid;
 	roomId = room;
-	date[data.side] = data.date;
-	for (i=0; i < grid.length; i++) {
-		if (grid[i].active === "active") {
-			var clue = (data.gridnums[i] != '0') ? '<span class="clueNum">' + data.gridnums[i] + '</span>' : '';
-			$('#' + data.side).append('<div class="square" data-grid-index=' + i + '>' + clue + '<span class="letter ' + (data.correct[i] ? 'correctWord' : '') + '">' + data.guessed[i] + '</span></div>');
-		}
-		else {
-			$('#' + data.side).append('<div class="square black"></div>');
-		}
+	if (roomId === 0) {
+		window.location ="/'"
 	}
+	else {
+		$('#' + data.side)
+			.empty()
+			.data('data', data);
+		grid = data.grid;
+		date[data.side] = data.date;
+		for (i=0; i < grid.length; i++) {
+			if (grid[i].active === "active") {
+				var clue = (data.gridnums[i] != '0') ? '<span class="clueNum">' + data.gridnums[i] + '</span>' : '';
+				$('#' + data.side).append('<div class="square" data-grid-index=' + i + '>' + clue + '<span class="letter ' + (data.correct[i] ? 'correctWord' : '') + '">' + data.guessed[i] + '</span></div>');
+			}
+			else {
+				$('#' + data.side).append('<div class="square black"></div>');
+			}
+		}
 
-	$('#faceInfo').html('<strong>FRONT</strong> ' + '<span class="puzzleDate">' + date['front'] + '</span>');
+		$('#faceInfo').html('<strong>FRONT</strong> ' + '<span class="puzzleDate">' + date['front'] + '</span>');
+	}
 });
 
 socket.on('updateletter', function(data) {
@@ -90,10 +102,14 @@ socket.on('guessresults', function(data) {
 		for (var i in word.squares){
 			var square = word.squares[i];
 			$(square).find('.letter').addClass('correctWord');
+			$(square).find('.letter').html(data.data.guess[i]);
 		}
-		//play correct sound
-		var audio = document.getElementById("winSound");
-		audio.play();
+
+		if (data.result === 'correct'){
+			//play correct sound
+			var audio = document.getElementById("winSound");
+			audio.play();
+		}
 	}
 });
 
@@ -213,16 +229,16 @@ $(function(){
 	});
 	
 	$(document).keypress(function(e){
-		//if chat input has focus or the word is done, quit
+		// if chat input has focus or the word is done, quit
 		if ( $('#data').is(":focus") || currentWord.done){
 			return;
 		}
-		//backspace - delete last letter that's not empty or part of a correct word
+		// backspace - delete last letter that's not empty or part of a correct word
 		if(e.which == 8) {
 			$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
 			e.preventDefault();
 		}
-		//letter
+		// letter
 		var letter = String.fromCharCode(e.which);
 		letter = letter.match(/[A-Za-z]/);
 		if (!letter || letter.length < 1){
@@ -230,10 +246,10 @@ $(function(){
 		}
 		letter = letter[0];
 		var box = false;
-		//for each letter in the word
+		// for each letter in the word
 		for (var i in currentWord.squares){
 			var square = currentWord.squares[i];
-			//if the square contains a letter, skip it
+			// if the square contains a letter, skip it
 			if ($(square).find('.letter').html() !== ''){
 				continue;
 			}
@@ -242,23 +258,24 @@ $(function(){
 			break;
 		}
 
-		//add the letter to the current box
+		// add the letter to the current box
 		socket.emit('sendletter', {letter:letter, index:$(box).attr('data-grid-index'), side: $(box).closest('.face').attr('id'), roomId: roomId });
 		$(box).find('.letter').html(letter);
 		
-		//if there are no more letters
+		// if there are no more letters
 		if ($(currentWord.squares).find('.letter:empty').length === 0) {
 			currentWord.done = true;
 		}
 
-		//all letters in word have already been filled, so the word is done
+		// all letters in word have already been filled, so the word is done
 		if (!box || currentWord.done){
 			currentWord.done = true;
 			var word = '';
 			for (var i in currentWord.squares){
 				word += $(currentWord.squares[i]).find('.letter').html();
 			}
-			//check if the word is right
+
+			// check if the word is right
 			socket.emit('checkword', { guess: word, user: userId, roomId: roomId, index: currentWord.index, direction: currentWord.direction, side: $(currentWord.squares[0]).closest('.face').attr('id'), firstSquare: $(currentWord.squares[0]).attr('data-grid-index')});
 			return;
 		}

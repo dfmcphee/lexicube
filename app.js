@@ -20,8 +20,9 @@ var Schema = mongoose.Schema,
 ObjectId = Schema.ObjectId;
 
 // Create schemas
-var UserSchema = require('./models/user')(Schema);
+var UserSchema = require('./models/user')(Schema, ObjectId);
 var CrosswordSchema = require('./models/crossword')(Schema);
+CrosswordSchema.set('versionKey', false);
 var RoomSchema = require('./models/room')(Schema, ObjectId);
 
 var User = mongoose.model('User', UserSchema);
@@ -32,7 +33,7 @@ var Room = mongoose.model('Room', RoomSchema);
 mongoose = require('./db')(mongoose);
 
 // Import users
-var users = require('./users')(passport, passportMongoose, User);
+var users = require('./users')(passport, passportMongoose, mongoose, User);
 
 // Import app config
 require('./config')(app, express, path, passport);

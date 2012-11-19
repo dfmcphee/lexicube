@@ -1,6 +1,6 @@
-//configuration module 
-//All express and connect configuration must there
-module.exports = function(app, express, path, passport){ 
+// Configuration module
+// All express and connect configuration must be here
+module.exports = function(app, express, path, passport){
 	app.configure(function(){
 		app.set('port', 8000);
 		app.set('views', __dirname + '/views');
@@ -10,7 +10,7 @@ module.exports = function(app, express, path, passport){
 		app.use(express.cookieParser());
 		app.use(express.bodyParser());
 		app.use(express.methodOverride());
-		app.use(express.session({ secret: 'keyboard cat' }));
+		app.use(express.session({ secret: 'mqNL]dZ89#*l(DCdEL1%yQ2#R~xIfv[qVCvj-~TW' }));
 		// Initialize Passport!Also use passport.session() middleware, to support
 		// persistent login sessions (recommended).
 		app.use(passport.initialize());

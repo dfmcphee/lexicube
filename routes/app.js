@@ -4,18 +4,25 @@ module.exports = function(app, routes, user, User){
 
   app.post('/register', function(req, resp){
     var username = req.body.username.replace(/(<([^>]+)>)/ig,"");
-
-    new User({
-      username: username,
-      score: 0
-    }).save( function( err, user, count ){
-      req.logIn(user, function(err) {
-        if (err) {
-          return err;
-        }
-        // login success!
-        resp.redirect('/');
-      });
+    User.find({username: username}, function (err, users) {
+      if (users.length <= 0) {
+        
+        new User({
+          username: username,
+          score: 0
+        }).save( function( err, user, count ){
+          req.logIn(user, function(err) {
+            if (err) {
+              return err;
+            }
+            // login success!
+            resp.redirect('/');
+          });
+        });
+      }
+      else {
+        resp.redirect('/login');
+      }
     });
   });
 
