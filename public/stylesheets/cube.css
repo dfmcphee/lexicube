@@ -101,7 +101,8 @@ body {
   margin: 0;
   padding: 8px 25px;
   font: 14px Helvetica, Arial, sans-serif;
-  min-width: 1280px;
+  /*min-width:1280px;*/
+
 }
 * {
   -moz-box-sizing: border-box;
@@ -116,6 +117,32 @@ body {
   float: left;
   margin-left: 8px;
 }
+.light-header {
+  margin-bottom: 20px;
+}
+.light-header h1 {
+  color: #eee;
+  text-shadow: 1px -1px 4px #969696;
+  font-size: 6em;
+}
+.light-header h4 {
+  color: #eee;
+  text-shadow: 1px -1px 4px #969696;
+}
+.hidden {
+  display: none;
+}
+#login fieldset.form-panel {
+  padding: 20px;
+  background: #eee;
+  margin-top: 40px;
+}
+#register fieldset.form-panel {
+  padding: 30px;
+  background: #EEE;
+  margin-top: 20px;
+  padding-top: 10px;
+}
 #nodeVote {
   float: left;
   clear: left;
@@ -126,13 +153,23 @@ body {
   top: 15px;
   right: 60px;
 }
+#hidden-guess {
+  font-size: 16px;
+}
+.offscreen {
+  position: absolute;
+  left: -999em;
+}
 .introInstructions {
   float: left;
   background-color: white;
-  border: 2px solid black;
+  /*border:2px solid black;*/
+
+  background: #EEE;
   padding: 40px;
   width: 400px;
   margin-top: 26px;
+  border-radius: 5px;
 }
 .introInstructions h1 {
   padding: 0;
@@ -345,4 +382,20 @@ body {
   display: none;
   margin-top: 120px;
   clear: left;
+}
+/* Small Device Styles here */
+@media only screen and (max-width: 767px) {
+  .light-header {
+    margin-bottom: 20px;
+  }
+  .light-header h1 {
+    color: #eee;
+    text-shadow: 1px -1px 4px #969696;
+    font-size: 4em;
+  }
+  .light-header h4 {
+    color: #eee;
+    text-shadow: 1px -1px 4px #969696;
+    font-size: 1.5em;
+  }
 }

@@ -6,6 +6,7 @@ var express = require('express')
   , connect = require('connect')
   , user = require('./routes/user')
   , http = require('http')
+  , flash = require('connect-flash')
   , passport = require('passport')
   , passportMongoose = require('passport-mongoose')
   , path = require('path');
@@ -36,10 +37,10 @@ mongoose = require('./db')(mongoose);
 var users = require('./users')(passport, passportMongoose, mongoose, User);
 
 // Import app config
-require('./config')(app, express, path, passport);
+require('./config')(app, express, path, passport, flash);
 
 // Import app routes
-app = require('./routes/app')(app, routes, user, User);
+app = require('./routes/app')(app, routes, passport, user, User);
 
 // Create server
 var server = http.createServer(app).listen(app.get('port'), function(){

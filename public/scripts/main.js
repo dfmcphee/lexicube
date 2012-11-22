@@ -4,6 +4,7 @@ var date = [];
 var currentWord;
 var lastRaptor = 0;
 var roomId = 0;
+var sides = {};
 
 // on connection to server, ask for user's name with an anonymous callback
 socket.on('connect', function(){
@@ -48,12 +49,14 @@ socket.on('updateusers', function(data) {
 	});
 });
 
-socket.on('updategrid', function(data, room) {
+socket.on('updategrid', function(data, room, side) {
 	roomId = room;
 	if (roomId === 0) {
-		window.location ="/'"
+		window.location ="/'";
 	}
 	else {
+		sides[data.side] = side;
+
 		$('#' + data.side)
 			.empty()
 			.data('data', data);
@@ -118,11 +121,11 @@ socket.on('updateSelections', function(data) {
     
     //if this wasn't you, remove their other selections and highlight this one
     if (data.user !== userId) {
-    	$('.selectedBy' + data.user).removeClass('selectedBy' + data.user);
-    	for (var i in data.gridIndices) {
-	    	$('#' + data.side + ' .square[data-grid-index=' + data.gridIndices[i] + ']').addClass('selectedBy' + data.user);
-	    }  
-    }       
+		$('.selectedBy' + data.user).removeClass('selectedBy' + data.user);
+		for (var i in data.gridIndices) {
+			$('#' + data.side + ' .square[data-grid-index=' + data.gridIndices[i] + ']').addClass('selectedBy' + data.user);
+		}
+    }
 });
 
 function getClue(clues, num){
@@ -181,7 +184,7 @@ function getWord(square, direction){
 		}
 		word.clue = getClue(data.down, data.gridnums[start]);
 		word.index = getWordIndex(data.down, data.gridnums[start]);
-	}else {
+	} else {
 		var place = index % 15;
 		var min = index - place;
 		var max = index + (15-place);
@@ -274,9 +277,21 @@ $(function(){
 			for (var i in currentWord.squares){
 				word += $(currentWord.squares[i]).find('.letter').html();
 			}
+			var side = $(currentWord.squares[0]).closest('.face').attr('id');
+
+			var wordToCheck =  {
+				guess: word,
+				user: userId,
+				roomId: roomId,
+				crosswordId: sides[side],
+				index: currentWord.index,
+				direction: currentWord.direction,
+				side: side,
+				firstSquare: $(currentWord.squares[0]).attr('data-grid-index')
+			};
 
 			// check if the word is right
-			socket.emit('checkword', { guess: word, user: userId, roomId: roomId, index: currentWord.index, direction: currentWord.direction, side: $(currentWord.squares[0]).closest('.face').attr('id'), firstSquare: $(currentWord.squares[0]).attr('data-grid-index')});
+			socket.emit('checkword', wordToCheck);
 			return;
 		}
 	});

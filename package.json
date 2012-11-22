@@ -1,6 +1,6 @@
 {
   "name": "lexicube",
-  "version": "0.1.1-11",
+  "version": "0.1.2",
   "description": "LexiCube",
   "main": "app.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "less-middleware": "*",
     "socket.io": "0.9",
     "connect": "*",
+    "connect-flash": "*",
     "passport": "*",
     "passport-mongoose": "*",
     "mongoose": "*"

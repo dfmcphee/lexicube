@@ -29,27 +29,27 @@ module.exports = function(User, Crossword, Room, game, io){
 
               // Update grids for each side
               Crossword.findById(room.front, function(err, crossword){
-                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId);
+                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId, crossword._id);
               });
 
               Crossword.findById(room.back, function(err, crossword){
-                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId);
+                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId, crossword._id);
               });
 
               Crossword.findById(room.left, function(err, crossword){
-                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId);
+                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId, crossword._id);
               });
 
               Crossword.findById(room.right, function(err, crossword){
-                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId);
+                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId, crossword._id);
               });
 
               Crossword.findById(room.top, function(err, crossword){
-                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId);
+                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId, crossword._id);
               });
 
               Crossword.findById(room.bottom, function(err, crossword){
-                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId);
+                io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId, crossword._id);
               });
             }
             else {
@@ -87,7 +87,7 @@ module.exports = function(User, Crossword, Room, game, io){
           });
         }
         else {
-          socket.emit('refreshuser', data.id);
+          //socket.emit('refreshuser', data.id);
         }
       });
     });

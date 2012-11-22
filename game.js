@@ -233,123 +233,121 @@ module.exports = function(User, Crossword, Room, http, io){
   // Checks if a guess is correct or not
   game.checkWord = function(data){
     if (!data || !data.index){
+      console.log('error');
       return;
     }
-    
-    Room.findById(data.roomId, function(err, room){
-      if (!err && room) {
-        Crossword.findById(room[data.side], function (err, crossword){
-          if (!err && crossword) {
-            var result = '';
-            var intersections = [];
-            var intersection = data.direction == 'horizontal' ? 'vertical' : 'horizontal';
 
-            // If it is a horizontal word
-            if (data.direction === 'horizontal') {
-              // If guess is correct answer
-              if (data.guess.toUpperCase() === crossword.answers.across[data.index]) {
-                var userDidFinish = false;
-                var i = game.findIndexByClue(crossword, crossword.across[data.index]);
-                for (var l = data.guess.length+i; i < l + 1; i++){
-                  if (crossword.correct[i] == 0) {
-                    crossword.correct[i] = 1;
-                    crossword.markModified('correct.' + i);
-                    intersections.push(game.getWordFromIndex(crossword, intersection, i));
-                    userDidFinish = true;
-                  }
-                }
+    Crossword.findById(data.crosswordId, function (err, crossword){
+      if (!err && crossword) {
+        console.log('Crossword found.');
+        var result = '';
+        var intersections = [];
+        var intersection = data.direction == 'horizontal' ? 'vertical' : 'horizontal';
 
-                if (userDidFinish){
-                  result = 'correct';
-                  data.guess = crossword.answers.across[data.index];
-                } else {
-                  result = 'cheating';
-                }
-              }
-              // If not correct, clear guess
-              else {
-                result = 'incorrect';
-                var i = game.findIndexByClue(crossword, crossword.across[data.index]);
-                for (var l = data.guess.length+i; i < l + 1; i++) {
-                  if (crossword.correct[i] !== 1){
-                    crossword.guessed[i] = '';
-                    crossword.markModified('guessed.' + i);
-                  }
-                }
+        // If it is a horizontal word
+        if (data.direction === 'horizontal') {
+          // If guess is correct answer
+          if (data.guess.toUpperCase() === crossword.answers.across[data.index]) {
+            var userDidFinish = false;
+            var i = game.findIndexByClue(crossword, crossword.across[data.index]);
+            for (var l = data.guess.length+i; i < l + 1; i++){
+              if (crossword.correct[i] == 0) {
+                crossword.correct[i] = 1;
+                crossword.markModified('correct.' + i);
+                intersections.push(game.getWordFromIndex(crossword, intersection, i));
+                userDidFinish = true;
               }
             }
-            else if (data.direction === 'vertical') {
-              if (data.guess.toUpperCase() === crossword.answers.down[data.index]) {
-                var userDidFinish = false;
-                var i = game.findIndexByClue(crossword, crossword.down[data.index]);
-                for (var l = data.guess.length*15+i; i < l + 1; i+=15){
-                  if (crossword.correct[i] == 0){
-                    crossword.correct[i] = 1;
-                    crossword.markModified('correct.' + i);
-                    intersections.push(game.getWordFromIndex(crossword, intersection, i));
-                    userDidFinish = true;
-                  }
-                }
-                //crossword.save(game.updateWord);
 
-                if (userDidFinish){
-                  result = 'correct';
-                  data.guess = crossword.answers.down[data.index];
-                } else {
-                  result = 'cheating';
-                }
-              }
-              else {
-                result = 'incorrect';
-                var i = game.findIndexByClue(crossword, crossword.down[data.index]);
-                for (var l = data.guess.length*15+i; i < l + 1; i+=15){
-                  if (crossword.correct[i] !== 1){
-                    crossword.guessed[i] = '';
-                    crossword.markModified('guessed.' + i);
-                  }
-                }
-              }
-            }
-            // If word is correct, update user score
-            if (result === 'correct') {
-              User.findById(data.user, function(err, user) {
-                if (!err && user) {
-                    var newScore = user.score + data.guess.length;
-                    user.score = newScore;
-                    user.save();
-
-                    // update the list of users in chat, client-side
-                    User.find({online: true, currentRoom: user.currentRoom}, function(err, users) {
-                      io.sockets.in(user.currentRoom).emit('updateusers', users);
-                    });
-
-                    if (crossword.correct.indexOf(0) === -1) {
-                      console.log('side complete');
-                      getPuzzle(data.side, data.roomId);
-                    }
-                }
-              });
-            }
-
-            crossword.save(game.updateWord);
-
-            console.log(data);
-            console.log(result);
-
-            io.sockets.in(room._id).emit('guessresults', {data: data, result: result});
-
-            data.direction = intersection;
-            for(var index in intersections){
-              if (!intersections[index].complete){
-                continue;
-              }
-              data.firstSquare = intersections[index].first+"";
-              data.guess = intersections[index].letters+"";
-              data.index = intersections[index].index+"";
-              game.checkWord(data);
+            if (userDidFinish){
+              result = 'correct';
+              data.guess = crossword.answers.across[data.index];
+            } else {
+              result = 'cheating';
             }
           }
-        });
+          // If not correct, clear guess
+          else {
+            result = 'incorrect';
+            var i = game.findIndexByClue(crossword, crossword.across[data.index]);
+            for (var l = data.guess.length+i; i < l + 1; i++) {
+              if (crossword.correct[i] !== 1){
+                crossword.guessed[i] = '';
+                crossword.markModified('guessed.' + i);
+              }
+            }
+          }
+        }
+        else if (data.direction === 'vertical') {
+          if (data.guess.toUpperCase() === crossword.answers.down[data.index]) {
+            var userDidFinish = false;
+            var i = game.findIndexByClue(crossword, crossword.down[data.index]);
+            for (var l = data.guess.length*15+i; i < l + 1; i+=15){
+              if (crossword.correct[i] == 0){
+                crossword.correct[i] = 1;
+                crossword.markModified('correct.' + i);
+                intersections.push(game.getWordFromIndex(crossword, intersection, i));
+                userDidFinish = true;
+              }
+            }
+            //crossword.save(game.updateWord);
+
+            if (userDidFinish){
+              result = 'correct';
+              data.guess = crossword.answers.down[data.index];
+            } else {
+              result = 'cheating';
+            }
+          }
+          else {
+            result = 'incorrect';
+            var i = game.findIndexByClue(crossword, crossword.down[data.index]);
+            for (var l = data.guess.length*15+i; i < l + 1; i+=15){
+              if (crossword.correct[i] !== 1){
+                crossword.guessed[i] = '';
+                crossword.markModified('guessed.' + i);
+              }
+            }
+          }
+        }
+        // If word is correct, update user score
+        if (result === 'correct') {
+          User.findById(data.user, function(err, user) {
+            if (!err && user) {
+                var newScore = user.score + data.guess.length;
+                user.score = newScore;
+                user.save();
+
+                // update the list of users in chat, client-side
+                User.find({online: true, currentRoom: user.currentRoom}, function(err, users) {
+                  io.sockets.in(user.currentRoom).emit('updateusers', users);
+                });
+
+                if (crossword.correct.indexOf(0) === -1) {
+                  console.log('side complete');
+                  getPuzzle(data.side, data.roomId);
+                }
+            }
+          });
+        }
+
+        crossword.save(game.updateWord);
+
+        console.log(data);
+        console.log(result);
+
+        io.sockets.in(data.roomId).emit('guessresults', {data: data, result: result});
+
+        data.direction = intersection;
+        for(var index in intersections){
+          if (!intersections[index].complete){
+            continue;
+          }
+          data.firstSquare = intersections[index].first+"";
+          data.guess = intersections[index].letters+"";
+          data.index = intersections[index].index+"";
+          game.checkWord(data);
+        }
       }
     });
   };
