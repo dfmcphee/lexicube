@@ -1,6 +1,6 @@
 {
   "name": "lexicube",
-  "version": "0.1.2",
+  "version": "0.1.2-1",
   "description": "LexiCube",
   "main": "app.js",
   "scripts": {

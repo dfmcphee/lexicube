@@ -275,7 +275,7 @@ module.exports = function(User, Crossword, Room, http, io){
 
             if (userDidFinish){
               result = 'correct';
-              data.guess = crossword.answers.across[data.index];
+              data.guess = crossword.answers.across[data.answerIndex];
             } else {
               result = 'cheating';
             }
@@ -308,7 +308,7 @@ module.exports = function(User, Crossword, Room, http, io){
 
             if (userDidFinish){
               result = 'correct';
-              data.guess = crossword.answers.down[data.index];
+              data.guess = crossword.answers.down[data.answerIndex];
             } else {
               result = 'cheating';
             }
