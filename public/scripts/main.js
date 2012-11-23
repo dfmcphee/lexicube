@@ -324,7 +324,14 @@ $(function(){
 					var index = $(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().closest('.square').attr('data-grid-index');
 					var face = $(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().closest('.face').attr('id');
 					$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
-					socket.emit('sendletter', {letter:'', index: index, side: face, roomId: roomId });
+					socket.emit('sendletter', {
+						letter:letter,
+						index:index,
+						firstIndex:$(currentWord.squares[0]).attr('data-grid-index'),
+						side: face,
+						roomId: roomId,
+						crosswordId: sides[face]
+					});
 				}
 				doPrevent = true;
 			}
