@@ -153,9 +153,6 @@ body {
   top: 15px;
   right: 60px;
 }
-#hidden-guess {
-  font-size: 16px;
-}
 .offscreen {
   position: absolute;
   left: -999em;

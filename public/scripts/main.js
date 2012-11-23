@@ -65,7 +65,7 @@ socket.on('updategrid', function(data, room, side) {
 		for (i=0; i < grid.length; i++) {
 			if (grid[i].active === "active") {
 				var clue = (data.gridnums[i] != '0') ? '<span class="clueNum">' + data.gridnums[i] + '</span>' : '';
-				$('#' + data.side).append('<div class="square" data-grid-index=' + i + '>' + clue + '<span class="letter ' + (data.correct[i] ? 'correctWord' : '') + '">' + data.guessed[i] + '</span></div>');
+				$('#' + data.side).append('<div class="square" data-grid-index=' + i + ' data-word-across="' + data.grid[i].wordAcross + '" data-word-down="' + data.grid[i].wordDown + '" >' + clue + '<span class="letter ' + (data.correct[i] ? 'correctWord' : '') + '">' + data.guessed[i] + '</span></div>');
 			}
 			else {
 				$('#' + data.side).append('<div class="square black"></div>');
@@ -86,7 +86,8 @@ socket.on('refreshuser', function(data) {
 
 socket.on('guessresults', function(data) {
 	if (data.result === 'incorrect') {
-		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstSquare + '"]').first();
+		console.log(data);
+		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
 		var word = getWord(firstSquare, data.data.direction);
 		for (var i in word.squares){
 			var square = word.squares[i];
@@ -98,9 +99,10 @@ socket.on('guessresults', function(data) {
 			audio.play();
 			//refocus on this word
 			currentWord.done = false;
+			$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
 		}
 	} else {
-		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstSquare + '"]').first();
+		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
 		var word = getWord(firstSquare, data.data.direction);
 		for (var i in word.squares){
 			var square = word.squares[i];
@@ -260,11 +262,13 @@ $(function(){
 			box = square;
 			break;
 		}
-
+		var currentSide = $(box).closest('.face').attr('id');
 		// add the letter to the current box
-		socket.emit('sendletter', {letter:letter, index:$(box).attr('data-grid-index'), side: $(box).closest('.face').attr('id'), roomId: roomId });
+		socket.emit('sendletter', {letter:letter, index:$(box).attr('data-grid-index'), firstIndex:$(currentWord.squares[0]).attr('data-grid-index'), side: currentSide, roomId: roomId, crosswordId: sides[currentSide] });
 		$(box).find('.letter').html(letter);
 		
+
+		/*
 		// if there are no more letters
 		if ($(currentWord.squares).find('.letter:empty').length === 0) {
 			currentWord.done = true;
@@ -274,10 +278,18 @@ $(function(){
 		if (!box || currentWord.done){
 			currentWord.done = true;
 			var word = '';
-			for (var i in currentWord.squares){
+			for (var i in currentWord.squares) {
 				word += $(currentWord.squares[i]).find('.letter').html();
 			}
 			var side = $(currentWord.squares[0]).closest('.face').attr('id');
+
+			var wordIndex = '';
+			if (currentWord.direction === 'horizontal') {
+				wordIndex = $(currentWord.squares[0]).attr('data-word-across');
+			}
+			else if (currentWord.direction === 'vertical') {
+				wordIndex = $(currentWord.squares[0]).attr('data-word-down');
+			}
 
 			var wordToCheck =  {
 				guess: word,
@@ -287,13 +299,16 @@ $(function(){
 				index: currentWord.index,
 				direction: currentWord.direction,
 				side: side,
-				firstSquare: $(currentWord.squares[0]).attr('data-grid-index')
+				firstSquare: $(currentWord.squares[0]).attr('data-grid-index'),
+				answerIndex: wordIndex
 			};
 
 			// check if the word is right
 			socket.emit('checkword', wordToCheck);
+
 			return;
 		}
+		*/
 	});
 
 	// Prevent the backspace key from navigating back.

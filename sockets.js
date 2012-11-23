@@ -87,7 +87,7 @@ module.exports = function(User, Crossword, Room, game, io){
           });
         }
         else {
-          //socket.emit('refreshuser', data.id);
+          socket.emit('refreshuser', data.id);
         }
       });
     });
@@ -97,32 +97,87 @@ module.exports = function(User, Crossword, Room, game, io){
       io.sockets.in(socket.roomId).emit('updateSelections', data);
     });
 
-    socket.on('checkword', game.checkWord);
-
     socket.on('sendletter', function (data) {
-          Room.findById(socket.roomId, function(err, room) {
-            if (room) {
-              Crossword.findById(room[data.side], function(err, crossword) {
-                if (!crossword || err){
-                  return;
-                }
-                crossword.guessed[data.index] = data.letter;
-                
-                crossword.markModified('guessed.' + data.index);
+      Crossword.findById(data.crosswordId, function(err, crossword) {
+        if (!crossword || err){
+          return;
+        }
+        crossword.guessed[data.index] = data.letter;
+        
+        crossword.markModified('guessed.' + data.index);
 
-                crossword.save(function ( err, saved, count ){
-                  if (!err && count > 0) {
-                    console.log('Letter saved.');
-                  }
-                  else {
-                    console.log('Could not save letter.');
-                  }
-                  socket.broadcast.in(socket.roomId).emit('updateletter', data);
-                });
-              });
+        crossword.save(function ( err, saved, count ){
+          if (!err && count > 0) {
+            console.log('Letter saved.');
+            word = completeWord(crossword, data.firstIndex, 'across');
+            if (word.isFinished) {
+              console.log('word finished.');
+              data.direction = 'horizontal';
+              data.guess = word.guess;
+              data.answerIndex = word.answerIndex;
+              game.checkWord(data);
             }
-          });
+            //console.log(data);
+            word = completeWord(crossword, data.firstIndex, 'down');
+            if (word.isFinished) {
+              data.direction = 'vertical';
+              data.guess = word.guess;
+              data.answerIndex = word.answerIndex;
+              game.checkWord(data);
+            }
+            socket.broadcast.in(socket.roomId).emit('updateletter', data);
+          }
+          else {
+            console.log('Could not save letter.');
+          }
+        });
+      });
     });
+
+    function completeWord(crossword, index, direction){
+      var word = {};
+
+      word.guess = '';
+      wordAcross = '';
+      wordDown = '';
+      
+      if (direction === 'across') {
+        acrossIndex = crossword.grid[index].wordAcross;
+        letterIndex = Number(index);
+        for (i = 0; i < crossword.answers.across[acrossIndex].length; i++) {
+            wordAcross += crossword.guessed[letterIndex];
+            letterIndex++;
+        }
+        console.log(wordAcross);
+        if (wordAcross.length === crossword.answers.across[acrossIndex].length) {
+          word.isFinished = true;
+          word.guess = wordAcross;
+          word.answerIndex = acrossIndex;
+        }
+        else {
+          word.isFinished = false;
+        }
+      }
+      else {
+        downIndex = crossword.grid[index].wordDown;
+        letterIndex = Number(index);
+        for (i = 0; i < crossword.answers.down[downIndex].length; i++) {
+            wordDown += crossword.guessed[letterIndex];
+            letterIndex += 15;
+        }
+        if (wordDown.length === crossword.answers.down[downIndex].length) {
+          word.isFinished = true;
+          word.guess = wordDown;
+          word.answerIndex = downIndex;
+        }
+        else {
+          word.isFinished = false;
+        }
+      }
+      return word;
+    }
+
+    //socket.on('checkword', game.checkWord);
 
     // when the user disconnects.. perform this
     socket.on('disconnect', function(){
