@@ -325,7 +325,7 @@ $(function(){
 					var face = $(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().closest('.face').attr('id');
 					$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
 					socket.emit('sendletter', {
-						letter:letter,
+						letter:'',
 						index:index,
 						firstIndex:$(currentWord.squares[0]).attr('data-grid-index'),
 						side: face,
