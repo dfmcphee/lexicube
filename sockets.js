@@ -1,4 +1,6 @@
 module.exports = function(User, Crossword, Room, game, io){
+  letterQueue = {};
+  
   io.sockets.on('connection', function (socket) {
     // when the client emits 'sendchat', this listens and executes
     socket.on('sendchat', function (data) {
@@ -98,41 +100,56 @@ module.exports = function(User, Crossword, Room, game, io){
     });
 
     socket.on('sendletter', function (data) {
-      Crossword.findById(data.crosswordId, function(err, crossword) {
-        if (!crossword || err){
-          return;
-        }
-        crossword.guessed[data.index] = data.letter;
-        
-        crossword.markModified('guessed.' + data.index);
-
-        crossword.save(function ( err, saved, count ){
-          if (!err && count > 0) {
-            console.log('Letter saved.');
-            word = completeWord(crossword, data.firstIndex, 'across');
-            if (word.isFinished) {
-              console.log('word finished.');
-              data.direction = 'horizontal';
-              data.guess = word.guess;
-              data.answerIndex = word.answerIndex;
-              game.checkWord(data);
-            }
-            //console.log(data);
-            word = completeWord(crossword, data.firstIndex, 'down');
-            if (word.isFinished) {
-              data.direction = 'vertical';
-              data.guess = word.guess;
-              data.answerIndex = word.answerIndex;
-              game.checkWord(data);
-            }
-            socket.broadcast.in(socket.roomId).emit('updateletter', data);
-          }
-          else {
-            console.log('Could not save letter.');
-          }
-        });
-      });
+        saveLetter(data);
     });
+    
+    // Saves sent letter in guessed
+    function saveLetter(data) {    	
+    	console.log(letterQueue[data.gameId]);
+    	
+		Crossword.findById(data.crosswordId, function(err, crossword) {
+	        if (!crossword || err){
+	          return;
+	        }
+
+		    crossword.guessed[data.index] = data.letter;
+	        
+	        crossword.markModified('guessed.' + data.index);
+	
+	        crossword.save(function ( err, saved, count ){
+	          if (!err && count > 0) {
+	            console.log('Letter saved.');
+	            
+	            // Check if word across is complete
+	            word = completeWord(crossword, data.firstIndex, 'across');
+	            if (word.isFinished) {
+	              console.log('word finished.');
+	              data.direction = 'across';
+	              data.guess = word.guess;
+	              data.answerIndex = word.answerIndex;
+	              game.checkWord(data);
+	            }
+	            
+	            // Check if word down is complete
+	            word = completeWord(crossword, data.firstIndex, 'down');
+	            if (word.isFinished) {
+	              data.direction = 'down';
+	              data.guess = word.guess;
+	              data.answerIndex = word.answerIndex;
+	              game.checkWord(data);
+	            }
+	            
+	            // Send updateletter to users
+	            //socket.broadcast.in(socket.roomId).emit('updateletter', data);
+	            io.sockets.in(socket.roomId).emit('updateletter', data);
+	          }
+	          else {
+	            console.log('Could not save letter.');
+	            console.log(err);
+	          }
+	        });
+        });
+    }
 
     function completeWord(crossword, index, direction){
       var word = {};
@@ -176,8 +193,6 @@ module.exports = function(User, Crossword, Room, game, io){
       }
       return word;
     }
-
-    //socket.on('checkword', game.checkWord);
 
     // when the user disconnects.. perform this
     socket.on('disconnect', function(){

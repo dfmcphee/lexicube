@@ -6,6 +6,10 @@ var lastRaptor = 0;
 var roomId = 0;
 var sides = {};
 
+var sendingLetter = false;
+
+var letterQueue = [];
+
 // on connection to server, ask for user's name with an anonymous callback
 socket.on('connect', function(){
 	// call the server-side function 'adduser' and send one parameter (value of prompt)
@@ -49,8 +53,7 @@ socket.on('updateusers', function(data) {
 	});
 });
 
-socket.on('updategrid', function(data, room, side) {
-	roomId = room;
+socket.on('updategrid', function(data, roomId, side) {
 	if (roomId === 0) {
 		window.location ="/'";
 	}
@@ -77,6 +80,7 @@ socket.on('updategrid', function(data, room, side) {
 });
 
 socket.on('updateletter', function(data) {
+	sendingLetter = false;
 	$('#' + data.side + ' .square[data-grid-index="' + data.index + '"] .letter').html(data.letter);
 });
 
@@ -85,14 +89,27 @@ socket.on('refreshuser', function(data) {
 });
 
 socket.on('guessresults', function(data) {
-	if (data.result === 'incorrect') {
+	if (data.result === 'correct') {
+		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
+		var word = getWord(firstSquare, data.data.direction);
+		
+		$(word.squares).each(function(index, square) {
+			$(square).find('.letter').addClass('correctWord');
+			$(square).find('.letter').html(data.data.guess[index]);
+		});
+
+		//play correct sound
+		var audio = document.getElementById("winSound");
+		audio.play();
+	}
+	else {
 		console.log(data);
 		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
 		var word = getWord(firstSquare, data.data.direction);
-		for (var i in word.squares){
-			var square = word.squares[i];
+		$(word.squares).each(function(index, square) {
 			$(square).find('.letter:not(.correctWord)').html('');
-		}
+		});
+
 		if (data.data.user === userId) {
 			//play incorrect sound
 			var audio = document.getElementById("failSound");
@@ -100,20 +117,6 @@ socket.on('guessresults', function(data) {
 			//refocus on this word
 			currentWord.done = false;
 			$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
-		}
-	} else {
-		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
-		var word = getWord(firstSquare, data.data.direction);
-		for (var i in word.squares){
-			var square = word.squares[i];
-			$(square).find('.letter').addClass('correctWord');
-			$(square).find('.letter').html(data.data.guess[i]);
-		}
-
-		if (data.result === 'correct'){
-			//play correct sound
-			var audio = document.getElementById("winSound");
-			audio.play();
 		}
 	}
 });
@@ -141,77 +144,83 @@ function getClue(clues, num){
 	}
 }
 
-function getWordIndex(clues, num){
-	console.log(num);
-	for (var i in clues){
-		var n = parseInt(clues[i].split('.')[0]);
-		console.log(clues[i]);
-		if (n == num){
-			return i;
-		}
-	}
-}
-
 function getWord(square, direction){
 	if ($(square).hasClass('black')){
 		return null;
 	}
-	var word = {
-		clue:'',
-		squares: [],
-		answer: ''
-	};
-	var face = $(square).parent();
-	var data = face.data('data');
+
+	var word = {};
+	var face = $(square).parent().attr('id');
+	var data = $('#' + face).data('data');
+
 	console.log(data);
-	var allSquares = face.children();
-	var index = $(square).index();
-	var start;
-	if (direction == 'vertical'){
-		while (index >= 15){
-			if ($(allSquares[index-15]).hasClass('black')){
-				break;
-			}else {
-				index-=15;
-			}
-		}
-		start = index;
-		while(index < allSquares.length){
-			word.squares.push(allSquares[index]);
-			if ($(allSquares[index+15]).hasClass('black')){
-				break;
-			}else {
-				index+=15;
-			}
-		}
-		word.clue = getClue(data.down, data.gridnums[start]);
-		word.index = getWordIndex(data.down, data.gridnums[start]);
-	} else {
-		var place = index % 15;
-		var min = index - place;
-		var max = index + (15-place);
-		while (index > min){
-			if ($(allSquares[index-1]).hasClass('black')){
-				break;
-			}else {
-				index--;
-			}
-		}
-		start = index;
-		while(index < max){
-			word.squares.push(allSquares[index]);
-			if ($(allSquares[index+1]).hasClass('black')){
-				break;
-			}else {
-				index++;
-			}
-		}
-		word.clue = getClue(data.across, data.gridnums[start]);
-		word.index = getWordIndex(data.across, data.gridnums[start]);
+	if (direction == 'across'){
+		wordIndex = $(square).attr('data-word-across');
+		allSquares = $('#' + face + ' [data-word-across="' + wordIndex + '"]');
+		word.squares = allSquares;
+		word.clue = word.clue = data.across[wordIndex];
+		word.index = wordIndex;
+	}
+	else {
+		wordIndex = $(square).attr('data-word-down');
+		allSquares = $('#' + face + ' [data-word-down="' + wordIndex + '"]');
+		word.squares = allSquares;
+		word.clue = data.down[wordIndex];
+		word.index = wordIndex;
 	}
 	console.log(word);
+
 	return word;
 }
+
+function sendLetter() {
+	e = letterQueue.shift();
+
+	if(e.which == 8) {
+		$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
+		e.preventDefault();
+	}
+	// letter
+	var letter = String.fromCharCode(e.which);
+	letter = letter.match(/[A-Za-z]/);
+	if (!letter || letter.length < 1){
+		return;
+	}
+	letter = letter[0];
+	var box = false;
+	// for each letter in the word
+	for (i=0; i < currentWord.squares.length; i++) {
+		var square = currentWord.squares[i];
+		// if the square contains a letter, skip it
+		if ($(square).find('.letter').html() !== ''){
+			continue;
+		}
+	
+		box = square;
+		break;
+	}
+	
+	var currentSide = $(box).closest('.face').attr('id');
+	
+	sendingLetter = true;
+	
+	// add the letter to the current box
+	socket.emit('sendletter', {
+		letter:letter,
+		index:$(box).attr('data-grid-index'),
+		firstIndex:$(currentWord.squares[0]).attr('data-grid-index'),
+		side: currentSide, 
+		roomId: roomId, 
+		crosswordId: sides[currentSide],
+		user: userId
+	});
+	$(box).find('.letter').html(letter);
+	
+	if (letterQueue.length > 0) {
+		sendLetter();
+	}
+}
+
 // on load of page
 $(function(){
 	// when the client clicks SEND
@@ -239,76 +248,14 @@ $(function(){
 			return;
 		}
 		// backspace - delete last letter that's not empty or part of a correct word
-		if(e.which == 8) {
-			$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
-			e.preventDefault();
-		}
-		// letter
-		var letter = String.fromCharCode(e.which);
-		letter = letter.match(/[A-Za-z]/);
-		if (!letter || letter.length < 1){
-			return;
-		}
-		letter = letter[0];
-		var box = false;
-		// for each letter in the word
-		for (var i in currentWord.squares){
-			var square = currentWord.squares[i];
-			// if the square contains a letter, skip it
-			if ($(square).find('.letter').html() !== ''){
-				continue;
-			}
-
-			box = square;
-			break;
-		}
-		var currentSide = $(box).closest('.face').attr('id');
-		// add the letter to the current box
-		socket.emit('sendletter', {letter:letter, index:$(box).attr('data-grid-index'), firstIndex:$(currentWord.squares[0]).attr('data-grid-index'), side: currentSide, roomId: roomId, crosswordId: sides[currentSide] });
-		$(box).find('.letter').html(letter);
 		
-
-		/*
-		// if there are no more letters
-		if ($(currentWord.squares).find('.letter:empty').length === 0) {
-			currentWord.done = true;
+		if (letterQueue.length < 1) {
+			letterQueue.push(e);
+			sendLetter();
 		}
-
-		// all letters in word have already been filled, so the word is done
-		if (!box || currentWord.done){
-			currentWord.done = true;
-			var word = '';
-			for (var i in currentWord.squares) {
-				word += $(currentWord.squares[i]).find('.letter').html();
-			}
-			var side = $(currentWord.squares[0]).closest('.face').attr('id');
-
-			var wordIndex = '';
-			if (currentWord.direction === 'horizontal') {
-				wordIndex = $(currentWord.squares[0]).attr('data-word-across');
-			}
-			else if (currentWord.direction === 'vertical') {
-				wordIndex = $(currentWord.squares[0]).attr('data-word-down');
-			}
-
-			var wordToCheck =  {
-				guess: word,
-				user: userId,
-				roomId: roomId,
-				crosswordId: sides[side],
-				index: currentWord.index,
-				direction: currentWord.direction,
-				side: side,
-				firstSquare: $(currentWord.squares[0]).attr('data-grid-index'),
-				answerIndex: wordIndex
-			};
-
-			// check if the word is right
-			socket.emit('checkword', wordToCheck);
-
-			return;
+		else {
+			letterQueue.push(e);
 		}
-		*/
 	});
 
 	// Prevent the backspace key from navigating back.
@@ -330,7 +277,8 @@ $(function(){
 						firstIndex:$(currentWord.squares[0]).attr('data-grid-index'),
 						side: face,
 						roomId: roomId,
-						crosswordId: sides[face]
+						crosswordId: sides[face],
+						user: userId
 					});
 				}
 				doPrevent = true;
@@ -343,30 +291,30 @@ $(function(){
 	});
 
 	$(document).on('click', '.square', function(){
-		var direction = ($('.selected').hasClass('vertical')) ? 'vertical' : 'horizontal';
+		var direction = ($('.selected').hasClass('down')) ? 'down' : 'across';
 		
 		if ($(this).hasClass('selected')){
-			if ($(this).hasClass('horizontal')){
-				direction = 'vertical';
+			if ($(this).hasClass('across')){
+				direction = 'down';
 			} else {
-				direction = 'horizontal';
+				direction = 'across';
 			}
 		}
 		$('.selected').removeClass('selected').removeClass('selectedBy' + userId);
-		$('.horizontal').removeClass('horizontal');
-		$('.vertical').removeClass('vertical');
+		$('.across').removeClass('across');
+		$('.down').removeClass('down');
 		var word = getWord(this, direction);
 		if (!word){
 			return;
 		}
-		var clueDir = (direction === 'vertical') ? 'DOWN' : 'ACROSS';
+		var clueDir = (direction === 'down') ? 'DOWN' : 'ACROSS';
 		$('#clue').html('<strong>' + clueDir + '</strong> ' + word.clue);
 
 		//add selection
 		var gridIndices = [];
-		for (var i in word.squares) {
-			gridIndices.push($(word.squares[i]).attr('data-grid-index'));
-		}
+		$(word.squares).each(function(index, square) {
+			gridIndices.push($(square).attr('data-grid-index'));
+		});
 		socket.emit('updateSelection', { user: userId, gridIndices: gridIndices, side: $(word.squares[0]).closest('.face').attr('id'), wordIndex: word.index, wordDirection: word.direction } );
 		$(word.squares).addClass('selected').addClass(direction).addClass('selectedBy' + userId);
 		word.direction = direction;

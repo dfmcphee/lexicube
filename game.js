@@ -91,7 +91,8 @@ module.exports = function(User, Crossword, Room, http, io){
     }
 
     console.log('Game loaded for: ' + side);
-
+    
+    // Create crossword object
     var crossword = {
       side: side,
       grid: grid,
@@ -103,21 +104,22 @@ module.exports = function(User, Crossword, Room, http, io){
       down: obj.clues.down,
       date: obj.date
     };
-
-     new Crossword(crossword).save( function( err, saved, count ){
-        if (err) {
-          console.log('There was a problem saving crossword.');
-        }
-        else {
-          Room.findById(roomId, function( err, room ){
-            if (!err && room) {
-              room[side] = saved._id;
-              io.sockets.in(room._id).emit('updategrid', crossword);
-              room.save();
-              //game.rooms[room._id] = {id: room._id};
-            }
-          });
-        }
+    
+    // Save new crossword to db
+	new Crossword(crossword).save( function( err, saved, count ){
+		if (err) {
+		  console.log('There was a problem saving crossword.');
+		}
+		else {
+		  Room.findById(roomId, function( err, room ){
+		    if (!err && room) {
+		      room[side] = saved._id;
+		      io.sockets.in(room._id).emit('updategrid', crossword);
+		      room.save();
+		      //game.rooms[room._id] = {id: room._id};
+		    }
+		  });
+		}
     });
   };
 
@@ -142,11 +144,11 @@ module.exports = function(User, Crossword, Room, http, io){
                 var isValid = true;
                 // Loop through and check for invalid letters
                 for (i=0; i < obj.grid.length; i++){
-                  // initialize attributes of square
                   if (obj.grid[i].length > 1) {
                     isValid = false;
                   }
                 }
+                // If crossword is valid, build grid with it
                 if (isValid) {
                   console.log('its good');
                   buildGrid(obj, side, roomId);
@@ -154,11 +156,13 @@ module.exports = function(User, Crossword, Room, http, io){
                   console.log(obj.date);
                   game.usedDates[obj.date] = obj.date;
                 }
+                // Or try again
                 else {
                   console.log('no good');
                   game.getPuzzle(side, roomId);
                 }
             }
+            // Or try again
             else {
               console.log('no good');
               game.getPuzzle(side, roomId);
@@ -171,65 +175,6 @@ module.exports = function(User, Crossword, Room, http, io){
   game.findIndexByClue = function(crossword, clue){
     var clueId = parseInt(clue.split('.')[0]);
     return crossword.gridnums.indexOf(clueId);
-  };
-
-  // Get the word going direction from that cell that is clicked
-  game.getWordFromIndex = function(crossword, direction, index){
-    var word = {
-      complete: false,
-      letters : '',
-      index   : null,
-      first   : null
-    };
-    //console.log(index);
-    if (direction == 'vertical'){
-      while (index >= 15){
-        if (crossword.grid[index-15].active == 'disabled'){
-          break;
-        } else {
-          index-=15;
-        }
-      }
-      start = index;
-      while (index < crossword.grid.length){
-        word.letters += crossword.guessed[index] || ' ';
-        if (crossword.grid[index+15] && crossword.grid[index+15].active == 'disabled'){
-          break;
-        } else {
-          index+=15;
-        }
-      }
-      //console.log(start);
-      word.index = crossword.gridnums[start]-1;
-    } else {
-      var place = index % 15;
-      var min = index - place;
-      var max = index + (15-place);
-      while (index > min){
-        if (crossword.grid[index-1].active == 'disabled'){
-          break;
-        } else {
-          index--;
-        }
-      }
-
-      start = index;
-      //console.log(start);
-      while (index < crossword.grid.length){
-        word.letters += crossword.guessed[index] || ' ';
-        if (crossword.grid[index+1] && crossword.grid[index+1].active == 'disabled'){
-          break;
-        } else {
-          index++;
-        }
-      }
-      word.index = crossword.gridnums[start]-1;
-    }
-    if (word.letters.indexOf(' ') == -1){
-      word.complete = true;
-    }
-    word.first = start;
-    return word;
   };
 
   game.updateWord = function(err, saved, count){
@@ -255,12 +200,12 @@ module.exports = function(User, Crossword, Room, http, io){
       if (!err && crossword) {
         console.log('Crossword found.');
         var result = '';
-        var intersections = [];
-        var intersection = data.direction == 'horizontal' ? 'vertical' : 'horizontal';
-
+        var guessLength = data.guess.length;
+      
         // If it is a horizontal word
-        if (data.direction === 'horizontal') {
-          // If guess is correct answer
+        if (data.direction === 'across') {
+
+          // If guess is correct
           if (data.guess.toUpperCase() === crossword.answers.across[data.answerIndex]) {
             var userDidFinish = false;
             var i = game.findIndexByClue(crossword, crossword.across[data.answerIndex]);
@@ -268,7 +213,6 @@ module.exports = function(User, Crossword, Room, http, io){
               if (crossword.correct[i] == 0) {
                 crossword.correct[i] = 1;
                 crossword.markModified('correct.' + i);
-                //intersections.push(game.getWordFromIndex(crossword, intersection, i));
                 userDidFinish = true;
               }
             }
@@ -280,11 +224,12 @@ module.exports = function(User, Crossword, Room, http, io){
               result = 'cheating';
             }
           }
+
           // If not correct, clear guess
           else {
             result = 'incorrect';
             var i = game.findIndexByClue(crossword, crossword.across[data.answerIndex]);
-            for (var l = data.guess.length+i; i < l + 1; i++) {
+            for (var l = data.guess.length+i; i < l; i++) {
               if (crossword.correct[i] !== 1){
                 crossword.guessed[i] = '';
                 crossword.markModified('guessed.' + i);
@@ -292,19 +237,21 @@ module.exports = function(User, Crossword, Room, http, io){
             }
           }
         }
-        else if (data.direction === 'vertical') {
+
+        // If it is a vertical word
+        else {
+        
+          // If guess is correct
           if (data.guess.toUpperCase() === crossword.answers.down[data.answerIndex]) {
             var userDidFinish = false;
             var i = game.findIndexByClue(crossword, crossword.down[data.answerIndex]);
-            for (var l = data.guess.length*15+i; i < l + 1; i+=15){
+            for (var l = data.guess.length*15+i; i < l; i+=15){
               if (crossword.correct[i] == 0){
                 crossword.correct[i] = 1;
                 crossword.markModified('correct.' + i);
-                //intersections.push(game.getWordFromIndex(crossword, intersection, i));
                 userDidFinish = true;
               }
             }
-            //crossword.save(game.updateWord);
 
             if (userDidFinish){
               result = 'correct';
@@ -313,10 +260,12 @@ module.exports = function(User, Crossword, Room, http, io){
               result = 'cheating';
             }
           }
+          
+          // If not correct, clear guess
           else {
             result = 'incorrect';
             var i = game.findIndexByClue(crossword, crossword.down[data.answerIndex]);
-            for (var l = data.guess.length*15+i; i < l + 1; i+=15){
+            for (var l = data.guess.length*15+i; i < l; i+=15){
               if (crossword.correct[i] !== 1){
                 crossword.guessed[i] = '';
                 crossword.markModified('guessed.' + i);
@@ -324,46 +273,38 @@ module.exports = function(User, Crossword, Room, http, io){
             }
           }
         }
+        console.log(data.user);
+        
         // If word is correct, update user score
         if (result === 'correct') {
           User.findById(data.user, function(err, user) {
+          	console.log(user);
             if (!err && user) {
-                var newScore = user.score + data.guess.length;
+                var newScore = user.score + guessLength;
                 user.score = newScore;
-                user.save();
-
-                // update the list of users in chat, client-side
-                User.find({online: true, currentRoom: user.currentRoom}, function(err, users) {
-                  io.sockets.in(user.currentRoom).emit('updateusers', users);
+                console.log('updated score: ' + newScore);
+                user.save(function(err, save, count) {
+                  console.log('user score updated.');
+                  // update the list of users in chat, client-side
+                  User.find({online: true, currentRoom: user.currentRoom}, function(err, users) {
+                    io.sockets.in(user.currentRoom).emit('updateusers', users);
+                    if (crossword.correct.indexOf(0) === -1) {
+                      console.log('side complete');
+                      getPuzzle(data.side, data.roomId);
+                    }
+                  });
                 });
-
-                if (crossword.correct.indexOf(0) === -1) {
-                  console.log('side complete');
-                  getPuzzle(data.side, data.roomId);
-                }
             }
           });
         }
 
-        crossword.save(game.updateWord);
-
-        console.log(data);
-        console.log(result);
-
-        io.sockets.in(data.roomId).emit('guessresults', {data: data, result: result});
-
-        /*
-        data.direction = intersection;
-        for(var index in intersections){
-          if (!intersections[index].complete){
-            continue;
+        crossword.save(function(err, save, count) {
+          if (!err && count > 0) {
+            console.log(data);
+            console.log(result);
+            io.sockets.in(data.roomId).emit('guessresults', {data: data, result: result});
           }
-          data.firstSquare = intersections[index].first+"";
-          data.guess = intersections[index].letters+"";
-          data.index = intersections[index].index+"";
-          //game.checkWord(data);
-        }
-        */
+        });
       }
     });
   };

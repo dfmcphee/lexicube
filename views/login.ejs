@@ -36,8 +36,11 @@
                         <fieldset class="form-panel">
                             <h3>New User</h3>
                             <h5 class="subheader header">What's your name?</h5>
-                            <input type="text" name="username" placeholder="username" />
-                            <input type="password" name="password" placeholder="password" />
+                            <input type="text" name="username" placeholder="username" class="username" />
+                            <input type="password" name="password" placeholder="password" class="password" />
+                            <blockquote class="password-help hidden">
+							  <p>If you don't enter a password, your account will only be temporary and you won't be able to keep your scores.</p>
+							</blockquote>
                             <input type="submit" class="button expand postfix" value="Play Now!" />
                         </fieldset>
                     </form>
@@ -45,5 +48,6 @@
             </div>
         </section>
         <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="scripts/login.js"></script>
     </body>
 </html>

@@ -129,7 +129,8 @@ body {
   color: #eee;
   text-shadow: 1px -1px 4px #969696;
 }
-.hidden {
+.hidden,
+input[type="password"].hidden {
   display: none;
 }
 #login fieldset.form-panel {
