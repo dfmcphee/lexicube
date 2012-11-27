@@ -6,9 +6,7 @@ var lastRaptor = 0;
 var roomId = 0;
 var sides = {};
 
-var sendingLetter = false;
-
-var letterQueue = [];
+var checkingWord = false;
 
 // on connection to server, ask for user's name with an anonymous callback
 socket.on('connect', function(){
@@ -81,7 +79,6 @@ socket.on('updategrid', function(data, room, side) {
 });
 
 socket.on('updateletter', function(data) {
-	sendingLetter = false;
 	$('#' + data.side + ' .square[data-grid-index="' + data.index + '"] .letter').html(data.letter);
 });
 
@@ -92,9 +89,10 @@ socket.on('refreshuser', function(data) {
 socket.on('guessresults', function(data) {
 	if (data.result === 'correct') {
 		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
-		var word = getWord(firstSquare, data.data.direction);
 		
-		$(word.squares).each(function(index, square) {
+		//var word = getWord(firstSquare, data.data.direction);
+		
+		$('#' + data.data.side + ' [data-word-' + data.data.direction + '="' + data.data.index + '"]').each(function(index, square){
 			$(square).find('.letter').addClass('correctWord');
 			$(square).find('.letter').html(data.data.guess[index]);
 		});
@@ -106,8 +104,8 @@ socket.on('guessresults', function(data) {
 	else {
 		console.log(data);
 		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
-		var word = getWord(firstSquare, data.data.direction);
-		$(word.squares).each(function(index, square) {
+		
+		$('#' + data.data.side + ' [data-word-' + data.data.direction + '="' + data.data.index + '"]').each(function(index, square) {
 			$(square).find('.letter:not(.correctWord)').html('');
 		});
 
@@ -175,7 +173,8 @@ function getWord(square, direction){
 }
 
 function sendLetter(e) {
-	if (!sendingLetter) {
+	if (!checkingWord) {
+		checkingWord = true;
 		// backspace - delete last letter that's not empty or part of a correct word
 		if(e.which == 8) {
 			$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
@@ -202,8 +201,8 @@ function sendLetter(e) {
 		}
 		
 		var currentSide = $(box).closest('.face').attr('id');
-		
-		sendingLetter = true;
+	
+		$(box).find('.letter').html(letter);
 		
 		// add the letter to the current box
 		socket.emit('sendletter', {
@@ -215,7 +214,82 @@ function sendLetter(e) {
 			crosswordId: sides[currentSide],
 			user: userId
 		});
+		
+		if (currentWord.direction === 'across') {
+			if (checkWordAcrossComplete(box, currentSide)) {
+				checkWordDownComplete(box, currentSide);
+			}
+		}
+		else if (currentWord.direction === 'down') {
+			if (checkWordDownComplete(box, currentSide)) {
+				checkWordAcrossComplete(box, currentSide);
+			}
+		}
+		
+
+		checkingWord = false;
 	}
+}
+
+function checkWordAcrossComplete(box, currentSide) {
+	// Check if horizontal word is finished
+	var wordAcross = $(box).attr('data-word-across');
+	var acrossFinished = true;
+	var guess = '';
+	
+	$('#' + currentSide + ' [data-word-across="' + wordAcross + '"]').each(function(index, cell){
+		value = $(cell).find('.letter').html();
+		if (value === '') {
+			acrossFinished = false;
+		}
+		else {
+			guess += value;
+		}
+	});
+	
+	if (acrossFinished) {
+		socket.emit('checkword', {
+			guess: guess,
+			direction: 'across',
+			index: wordAcross,
+			side: currentSide, 
+			roomId: roomId, 
+			crosswordId: sides[currentSide],
+			user: userId
+		});
+	}
+	
+	return acrossFinished;
+}
+
+function checkWordDownComplete(box, currentSide) {
+	// Check if vertical word is finished
+	var wordDown = $(box).attr('data-word-down');
+	var downFinished = true;
+	var guess = '';
+	
+	$('#' + currentSide + ' [data-word-down="' + wordDown + '"]').each(function(index, cell){
+		value = $(cell).find('.letter').html();
+		if (value === '') {
+			downFinished = false;
+		}
+		else {
+			guess += value;
+		}
+	});
+	
+	if (downFinished) {
+		socket.emit('checkword', {
+			guess: guess,
+			direction: 'down',
+			index: wordDown,
+			side: currentSide, 
+			roomId: roomId, 
+			crosswordId: sides[currentSide],
+			user: userId
+		});
+	}
+	return downFinished;
 }
 
 // on load of page
@@ -246,16 +320,6 @@ $(function(){
 		}
 		
 		sendLetter(e);
-		
-		/*
-		if (letterQueue.length < 1) {
-			letterQueue.push(e);
-			sendLetter();
-		}
-		else {
-			letterQueue.push(e);
-		}
-		*/
 	});
 
 	// Prevent the backspace key from navigating back.

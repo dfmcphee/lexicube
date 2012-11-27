@@ -190,27 +190,26 @@ module.exports = function(User, Crossword, Room, http, io){
   };
 
   // Checks if a guess is correct or not
-  game.checkWord = function(data, direction){
+  game.checkWord = function(data){
     if (!data || !data.index){
       console.log('error');
       return;
     }
+    
+    direction = data.direction;
 
     Crossword.findById(data.crosswordId, function (err, crossword){
       if (!err && crossword) {
-        console.log('Crossword found.');
         var result = '';
         var guessLength = data.guess.length;
         
-        console.log(direction);
-        
         // If it is a horizontal word
         if (direction === 'across') {
-	      console.log('Checking across.');
+        
           // If guess is correct
-          if (data.guess.toUpperCase() === crossword.answers.across[data.answerIndex]) {
+          if (data.guess.toUpperCase() === crossword.answers.across[data.index]) {
             var userDidFinish = false;
-            var i = game.findIndexByClue(crossword, crossword.across[data.answerIndex]);
+            var i = game.findIndexByClue(crossword, crossword.across[data.index]);
             for (var l = data.guess.length+i; i < l + 1; i++){
               if (crossword.correct[i] == 0) {
                 crossword.correct[i] = 1;
@@ -221,7 +220,7 @@ module.exports = function(User, Crossword, Room, http, io){
 
             if (userDidFinish){
               result = 'correct';
-              data.guess = crossword.answers.across[data.answerIndex];
+              data.guess = crossword.answers.across[data.index];
             } else {
               result = 'cheating';
             }
@@ -230,7 +229,7 @@ module.exports = function(User, Crossword, Room, http, io){
           // If not correct, clear guess
           else {
             result = 'incorrect';
-            var i = game.findIndexByClue(crossword, crossword.across[data.answerIndex]);
+            var i = game.findIndexByClue(crossword, crossword.across[data.index]);
             for (var l = data.guess.length+i; i < l; i++) {
               if (crossword.correct[i] !== 1){
                 crossword.guessed[i] = '';
@@ -244,9 +243,9 @@ module.exports = function(User, Crossword, Room, http, io){
         else {
         
           // If guess is correct
-          if (data.guess.toUpperCase() === crossword.answers.down[data.answerIndex]) {
+          if (data.guess.toUpperCase() === crossword.answers.down[data.index]) {
             var userDidFinish = false;
-            var i = game.findIndexByClue(crossword, crossword.down[data.answerIndex]);
+            var i = game.findIndexByClue(crossword, crossword.down[data.index]);
             for (var l = data.guess.length*15+i; i < l; i+=15){
               if (crossword.correct[i] == 0){
                 crossword.correct[i] = 1;
@@ -257,7 +256,7 @@ module.exports = function(User, Crossword, Room, http, io){
 
             if (userDidFinish){
               result = 'correct';
-              data.guess = crossword.answers.down[data.answerIndex];
+              data.guess = crossword.answers.down[data.index];
             } else {
               result = 'cheating';
             }
@@ -266,7 +265,7 @@ module.exports = function(User, Crossword, Room, http, io){
           // If not correct, clear guess
           else {
             result = 'incorrect';
-            var i = game.findIndexByClue(crossword, crossword.down[data.answerIndex]);
+            var i = game.findIndexByClue(crossword, crossword.down[data.index]);
             for (var l = data.guess.length*15+i; i < l; i+=15){
               if (crossword.correct[i] !== 1){
                 crossword.guessed[i] = '';
@@ -302,13 +301,8 @@ module.exports = function(User, Crossword, Room, http, io){
 
         crossword.save(function(err, save, count) {
           if (!err && count > 0) {
-            console.log(data);
-            console.log(result);
+         	console.log(data);
             io.sockets.in(data.roomId).emit('guessresults', {data: data, result: result});
-            if (data.direction === 'across') {
-            	data.direction = 'down';
-	        	completeWord(data, crossword, data.firstIndex, data.direction);   
-            }
           }
         });
       }

@@ -103,9 +103,7 @@ module.exports = function(User, Crossword, Room, game, io){
         saveLetter(data);
     });
     
-    socket.on('checkword', function (data) {
-        saveLetter(data);
-    });
+    socket.on('checkword', game.checkWord);
     
     // Saves sent letter in guessed
     function saveLetter(data) {    	
@@ -124,13 +122,8 @@ module.exports = function(User, Crossword, Room, game, io){
 	          if (!err && count > 0) {
 	            console.log('Letter saved.');
 	            
-	            // Check if word across is complete
-	            data.direction = 'across';
-	            completeWord(data, crossword, data.firstIndex, data.direction);
-	            
 	            // Send updateletter to users
-	            //socket.broadcast.in(socket.roomId).emit('updateletter', data);
-	            io.sockets.in(socket.roomId).emit('updateletter', data);
+	            socket.broadcast.in(socket.roomId).emit('updateletter', data);
 	          }
 	          else {
 	            console.log('Could not save letter.');
@@ -138,60 +131,6 @@ module.exports = function(User, Crossword, Room, game, io){
 	          }
 	        });
         });
-    }
-
-    function completeWord(data, crossword, index, direction){
-      var word = {};
-
-      word.guess = '';
-      wordAcross = '';
-      wordDown = '';
-      
-      // If the word is across
-      if (direction === 'across') {
-      	letterIndex = Number(index);
-        acrossIndex = crossword.grid[index].wordAcross;
-        
-        for (i = 0; i < crossword.answers.across[acrossIndex].length; i++) {
-            wordAcross += crossword.guessed[letterIndex];
-            letterIndex++;
-        }
-
-        if (wordAcross.length === crossword.answers.across[acrossIndex].length) {
-          word.isFinished = true;
-          word.guess = wordAcross;
-          word.answerIndex = acrossIndex;
-        }
-        else {
-          word.isFinished = false;
-        }
-      }
-      
-      // If the word is down
-      else {
-        letterIndex = Number(index);
-        downIndex = crossword.grid[index].wordDown;
-        
-        for (i = 0; i < crossword.answers.down[downIndex].length; i++) {
-            wordDown += crossword.guessed[letterIndex];
-            letterIndex += 15;
-        }
-        
-        if (wordDown.length === crossword.answers.down[downIndex].length) {
-          word.isFinished = true;
-          word.guess = wordDown;
-          word.answerIndex = downIndex;
-        }
-        else {
-          word.isFinished = false;
-        }
-      }
-      
-      if (word.isFinished) {
-		  data.guess = word.guess;
-		  data.answerIndex = word.answerIndex;
-		  game.checkWord(data, data.direction);
-	  }
     }
 
     // when the user disconnects.. perform this
