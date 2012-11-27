@@ -190,7 +190,7 @@ module.exports = function(User, Crossword, Room, http, io){
   };
 
   // Checks if a guess is correct or not
-  game.checkWord = function(data){
+  game.checkWord = function(data, direction){
     if (!data || !data.index){
       console.log('error');
       return;
@@ -201,10 +201,12 @@ module.exports = function(User, Crossword, Room, http, io){
         console.log('Crossword found.');
         var result = '';
         var guessLength = data.guess.length;
-      
+        
+        console.log(direction);
+        
         // If it is a horizontal word
-        if (data.direction === 'across') {
-
+        if (direction === 'across') {
+	      console.log('Checking across.');
           // If guess is correct
           if (data.guess.toUpperCase() === crossword.answers.across[data.answerIndex]) {
             var userDidFinish = false;
@@ -278,13 +280,13 @@ module.exports = function(User, Crossword, Room, http, io){
         // If word is correct, update user score
         if (result === 'correct') {
           User.findById(data.user, function(err, user) {
-          	console.log(user);
             if (!err && user) {
                 var newScore = user.score + guessLength;
                 user.score = newScore;
-                console.log('updated score: ' + newScore);
+                console.log('updating score: ' + newScore);
                 user.save(function(err, save, count) {
                   console.log('user score updated.');
+                  
                   // update the list of users in chat, client-side
                   User.find({online: true, currentRoom: user.currentRoom}, function(err, users) {
                     io.sockets.in(user.currentRoom).emit('updateusers', users);
@@ -303,6 +305,10 @@ module.exports = function(User, Crossword, Room, http, io){
             console.log(data);
             console.log(result);
             io.sockets.in(data.roomId).emit('guessresults', {data: data, result: result});
+            if (data.direction === 'across') {
+            	data.direction = 'down';
+	        	completeWord(data, crossword, data.firstIndex, data.direction);   
+            }
           }
         });
       }

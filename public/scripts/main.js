@@ -53,11 +53,12 @@ socket.on('updateusers', function(data) {
 	});
 });
 
-socket.on('updategrid', function(data, roomId, side) {
-	if (roomId === 0) {
+socket.on('updategrid', function(data, room, side) {
+	if (room === 0) {
 		window.location ="/'";
 	}
 	else {
+		roomId = room;
 		sides[data.side] = side;
 
 		$('#' + data.side)
@@ -173,51 +174,47 @@ function getWord(square, direction){
 	return word;
 }
 
-function sendLetter() {
-	e = letterQueue.shift();
-
-	if(e.which == 8) {
-		$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
-		e.preventDefault();
-	}
-	// letter
-	var letter = String.fromCharCode(e.which);
-	letter = letter.match(/[A-Za-z]/);
-	if (!letter || letter.length < 1){
-		return;
-	}
-	letter = letter[0];
-	var box = false;
-	// for each letter in the word
-	for (i=0; i < currentWord.squares.length; i++) {
-		var square = currentWord.squares[i];
-		// if the square contains a letter, skip it
-		if ($(square).find('.letter').html() !== ''){
-			continue;
+function sendLetter(e) {
+	if (!sendingLetter) {
+		// backspace - delete last letter that's not empty or part of a correct word
+		if(e.which == 8) {
+			$(currentWord.squares).find('.letter').not(':empty').not('.correctWord').last().html('');
+			e.preventDefault();
 		}
-	
-		box = square;
-		break;
-	}
-	
-	var currentSide = $(box).closest('.face').attr('id');
-	
-	sendingLetter = true;
-	
-	// add the letter to the current box
-	socket.emit('sendletter', {
-		letter:letter,
-		index:$(box).attr('data-grid-index'),
-		firstIndex:$(currentWord.squares[0]).attr('data-grid-index'),
-		side: currentSide, 
-		roomId: roomId, 
-		crosswordId: sides[currentSide],
-		user: userId
-	});
-	$(box).find('.letter').html(letter);
-	
-	if (letterQueue.length > 0) {
-		sendLetter();
+		// letter
+		var letter = String.fromCharCode(e.which);
+		letter = letter.match(/[A-Za-z]/);
+		if (!letter || letter.length < 1){
+			return;
+		}
+		letter = letter[0];
+		var box = false;
+		// for each letter in the word
+		for (i=0; i < currentWord.squares.length; i++) {
+			var square = currentWord.squares[i];
+			// if the square contains a letter, skip it
+			if ($(square).find('.letter').html() !== ''){
+				continue;
+			}
+		
+			box = square;
+			break;
+		}
+		
+		var currentSide = $(box).closest('.face').attr('id');
+		
+		sendingLetter = true;
+		
+		// add the letter to the current box
+		socket.emit('sendletter', {
+			letter:letter,
+			index:$(box).attr('data-grid-index'),
+			firstIndex:$(currentWord.squares[0]).attr('data-grid-index'),
+			side: currentSide, 
+			roomId: roomId, 
+			crosswordId: sides[currentSide],
+			user: userId
+		});
 	}
 }
 
@@ -247,8 +244,10 @@ $(function(){
 		if ( $('#data').is(":focus") || currentWord.done){
 			return;
 		}
-		// backspace - delete last letter that's not empty or part of a correct word
 		
+		sendLetter(e);
+		
+		/*
 		if (letterQueue.length < 1) {
 			letterQueue.push(e);
 			sendLetter();
@@ -256,6 +255,7 @@ $(function(){
 		else {
 			letterQueue.push(e);
 		}
+		*/
 	});
 
 	// Prevent the backspace key from navigating back.

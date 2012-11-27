@@ -103,6 +103,10 @@ module.exports = function(User, Crossword, Room, game, io){
         saveLetter(data);
     });
     
+    socket.on('checkword', function (data) {
+        saveLetter(data);
+    });
+    
     // Saves sent letter in guessed
     function saveLetter(data) {    	
     	console.log(letterQueue[data.gameId]);
@@ -121,23 +125,8 @@ module.exports = function(User, Crossword, Room, game, io){
 	            console.log('Letter saved.');
 	            
 	            // Check if word across is complete
-	            word = completeWord(crossword, data.firstIndex, 'across');
-	            if (word.isFinished) {
-	              console.log('word finished.');
-	              data.direction = 'across';
-	              data.guess = word.guess;
-	              data.answerIndex = word.answerIndex;
-	              game.checkWord(data);
-	            }
-	            
-	            // Check if word down is complete
-	            word = completeWord(crossword, data.firstIndex, 'down');
-	            if (word.isFinished) {
-	              data.direction = 'down';
-	              data.guess = word.guess;
-	              data.answerIndex = word.answerIndex;
-	              game.checkWord(data);
-	            }
+	            data.direction = 'across';
+	            completeWord(data, crossword, data.firstIndex, data.direction);
 	            
 	            // Send updateletter to users
 	            //socket.broadcast.in(socket.roomId).emit('updateletter', data);
@@ -151,21 +140,23 @@ module.exports = function(User, Crossword, Room, game, io){
         });
     }
 
-    function completeWord(crossword, index, direction){
+    function completeWord(data, crossword, index, direction){
       var word = {};
 
       word.guess = '';
       wordAcross = '';
       wordDown = '';
       
+      // If the word is across
       if (direction === 'across') {
+      	letterIndex = Number(index);
         acrossIndex = crossword.grid[index].wordAcross;
-        letterIndex = Number(index);
+        
         for (i = 0; i < crossword.answers.across[acrossIndex].length; i++) {
             wordAcross += crossword.guessed[letterIndex];
             letterIndex++;
         }
-        console.log(wordAcross);
+
         if (wordAcross.length === crossword.answers.across[acrossIndex].length) {
           word.isFinished = true;
           word.guess = wordAcross;
@@ -175,13 +166,17 @@ module.exports = function(User, Crossword, Room, game, io){
           word.isFinished = false;
         }
       }
+      
+      // If the word is down
       else {
-        downIndex = crossword.grid[index].wordDown;
         letterIndex = Number(index);
+        downIndex = crossword.grid[index].wordDown;
+        
         for (i = 0; i < crossword.answers.down[downIndex].length; i++) {
             wordDown += crossword.guessed[letterIndex];
             letterIndex += 15;
         }
+        
         if (wordDown.length === crossword.answers.down[downIndex].length) {
           word.isFinished = true;
           word.guess = wordDown;
@@ -191,7 +186,12 @@ module.exports = function(User, Crossword, Room, game, io){
           word.isFinished = false;
         }
       }
-      return word;
+      
+      if (word.isFinished) {
+		  data.guess = word.guess;
+		  data.answerIndex = word.answerIndex;
+		  game.checkWord(data, data.direction);
+	  }
     }
 
     // when the user disconnects.. perform this
