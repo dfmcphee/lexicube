@@ -117,6 +117,10 @@ module.exports = function(User, Crossword, Room, http, io){
 		      io.sockets.in(room._id).emit('updategrid', crossword);
 		      room.save();
 		      //game.rooms[room._id] = {id: room._id};
+		      
+		      if (side === "bottom") {
+			  	io.sockets.in(roomId).emit('showcube');
+		      }
 		    }
 		  });
 		}
@@ -210,6 +214,7 @@ module.exports = function(User, Crossword, Room, http, io){
           if (data.guess.toUpperCase() === crossword.answers.across[data.index]) {
             var userDidFinish = false;
             var i = game.findIndexByClue(crossword, crossword.across[data.index]);
+            
             for (var l = data.guess.length+i; i < l + 1; i++){
               if (crossword.correct[i] == 0) {
                 crossword.correct[i] = 1;
@@ -246,6 +251,7 @@ module.exports = function(User, Crossword, Room, http, io){
           if (data.guess.toUpperCase() === crossword.answers.down[data.index]) {
             var userDidFinish = false;
             var i = game.findIndexByClue(crossword, crossword.down[data.index]);
+            
             for (var l = data.guess.length*15+i; i < l; i+=15){
               if (crossword.correct[i] == 0){
                 crossword.correct[i] = 1;
@@ -291,7 +297,7 @@ module.exports = function(User, Crossword, Room, http, io){
                     io.sockets.in(user.currentRoom).emit('updateusers', users);
                     if (crossword.correct.indexOf(0) === -1) {
                       console.log('side complete');
-                      getPuzzle(data.side, data.roomId);
+                      game.getPuzzle(data.side, data.roomId);
                     }
                   });
                 });

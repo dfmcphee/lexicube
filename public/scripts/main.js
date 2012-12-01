@@ -86,6 +86,11 @@ socket.on('refreshuser', function(data) {
 	window.location = '/login';
 });
 
+socket.on('showcube', function() {
+	$('#wrapper').fadeIn();
+	$('body .loading-animation').remove();
+});
+
 socket.on('guessresults', function(data) {
 	if (data.result === 'correct') {
 		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
@@ -184,6 +189,7 @@ function sendLetter(e) {
 		var letter = String.fromCharCode(e.which);
 		letter = letter.match(/[A-Za-z]/);
 		if (!letter || letter.length < 1){
+			checkingWord = false;
 			return;
 		}
 		letter = letter[0];
@@ -214,18 +220,19 @@ function sendLetter(e) {
 			crosswordId: sides[currentSide],
 			user: userId
 		});
-		
+	
 		if (currentWord.direction === 'across') {
 			if (checkWordAcrossComplete(box, currentSide)) {
 				checkWordDownComplete(box, currentSide);
+				complete = true;
 			}
 		}
 		else if (currentWord.direction === 'down') {
 			if (checkWordDownComplete(box, currentSide)) {
 				checkWordAcrossComplete(box, currentSide);
+				complete = true;
 			}
 		}
-		
 
 		checkingWord = false;
 	}
@@ -294,6 +301,14 @@ function checkWordDownComplete(box, currentSide) {
 
 // on load of page
 $(function(){
+	if (roomId !== 0) {
+		$('#wrapper').fadeIn();
+	}
+	else {
+		$('<div>').addClass('loading-animation')
+		.append('<div class="wrapper"><div class="inner"><span>L</span><span>o</span><span>a</span><span>d</span><span>i</span><span>n</span><span>g</span></div>')
+		.appendTo('body');
+	}
 	// when the client clicks SEND
 	$('#datasend').click( function() {
 		var message = $('#data').val();

@@ -7,7 +7,11 @@ module.exports = function(User, Crossword, Room, game, io){
       // we tell the client to execute 'updatechat' with 2 parameters
       io.sockets.emit('updatechat', socket.username, data);
     });
-
+    
+    socket.on('showcube', function(data){ 
+	    
+    });
+    
     // when the client emits 'adduser', this listens and executes
     socket.on('adduser', function(data){
       socket.emit('loading');
@@ -52,6 +56,8 @@ module.exports = function(User, Crossword, Room, game, io){
 
               Crossword.findById(room.bottom, function(err, crossword){
                 io.sockets.in(socket.roomId).emit('updategrid', crossword, socket.roomId, crossword._id);
+                socket.emit('showcube');
+                updateUser(user, User, socket, io, data.color);
               });
             }
             else {
@@ -66,26 +72,10 @@ module.exports = function(User, Crossword, Room, game, io){
                   console.log(socket.roomId);
                   game.generateRoom(newRoom._id);
                   console.log('Room generated.');
+                  updateUser(user, User, socket, io, data.color);
                 }
               });
             }
-            // Update attributes
-            user.color = data.color;
-            user.online = true;
-
-            console.log(socket.roomId);
-
-            user.currentRoom = socket.roomId;
-
-            user.save( function ( err, user, count ){
-              if( err ) return next( err );
-                // echo globally (all clients) that a person has connected
-                socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has connected');
-                // update the list of users in chat, client-side
-                User.find({online: true, currentRoom: socket.roomId}, function(err, users) {
-                  io.sockets.in(socket.roomId).emit('updateusers', users);
-                });
-            });
           });
         }
         else {
@@ -93,6 +83,25 @@ module.exports = function(User, Crossword, Room, game, io){
         }
       });
     });
+    
+    function updateUser(user, User, socket, io, color) {
+	    user.color = color;
+        user.online = true;
+
+        console.log(socket.roomId);
+
+        user.currentRoom = socket.roomId;
+
+        user.save( function ( err, user, count ){
+          if( err ) return next( err );
+            // echo globally (all clients) that a person has connected
+            socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has connected');
+            // update the list of users in chat, client-side
+            User.find({online: true, currentRoom: socket.roomId}, function(err, users) {
+              io.sockets.in(socket.roomId).emit('updateusers', users);
+            });
+        });
+    }
 
     socket.on('updateSelection', function(data) {
       console.log('user #' + data.user + ' has selected a word');
