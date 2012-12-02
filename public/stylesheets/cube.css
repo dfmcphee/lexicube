@@ -193,15 +193,14 @@ img.large-logo {
 #wrapper #faceInfo {
   position: absolute;
   top: 0;
-  left: 0;
-  background-color: white;
+  left: 393px;
+  background-color: #EEE;
   width: 180px;
-  color: black;
-  border: 2px solid black;
   font-size: 16px;
   line-height: 2em;
   padding-left: 12px;
-  height: 34px;
+  height: 32px;
+  border-radius: 5px;
 }
 #wrapper #faceInfo .puzzleDate {
   float: right;
@@ -267,9 +266,8 @@ img.large-logo {
   left: 0;
   float: left;
   width: 640px;
-  background-color: white;
-  color: black;
-  border: 2px solid black;
+  background-color: #eee;
+  border-radius: 5px;
   font-size: 16px;
   line-height: 34px;
   padding-left: 12px;
@@ -280,16 +278,15 @@ img.large-logo {
   position: absolute;
   top: 0;
   right: 0;
-  color: black;
-  background-color: white;
+  background-color: #eee;
+  border-radius: 5px;
   height: 700px;
-  border: 2px solid black;
   width: 320px;
 }
 #chat-window .user-list {
   float: left;
   width: 100%;
-  border-bottom: 2px solid black;
+  border-bottom: 2px solid #3b3b3b;
   padding: 10px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -303,13 +300,13 @@ img.large-logo {
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  height: 510px;
+  height: 500px;
   padding: 10px;
 }
 #chat-window #input {
   float: left;
   width: 100%;
-  border-top: 2px solid black;
+  border-top: 2px solid #3b3b3b;
   overflow: none;
   padding: 10px;
   clear: left;
