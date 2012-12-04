@@ -98,8 +98,10 @@ socket.on('guessresults', function(data) {
 		//var word = getWord(firstSquare, data.data.direction);
 		
 		$('#' + data.data.side + ' [data-word-' + data.data.direction + '="' + data.data.index + '"]').each(function(index, square){
-			$(square).find('.letter').addClass('correctWord');
-			$(square).find('.letter').html(data.data.guess[index]);
+			if (data.data.guess[index] !== null) {
+				$(square).find('.letter').addClass('correctWord');
+				$(square).find('.letter').html(data.data.guess[index]);
+			}
 		});
 
 		//play correct sound
@@ -154,7 +156,7 @@ function getWord(square, direction){
 	}
 
 	var word = {};
-	var face = $(square).parent().attr('id');
+	var face = $(square).closest('.face').attr('id');
 	var data = $('#' + face).data('data');
 
 	console.log(data);
@@ -220,21 +222,23 @@ function sendLetter(e) {
 			crosswordId: sides[currentSide],
 			user: userId
 		});
+		
+		setTimeout(function() {
+			if (currentWord.direction === 'across') {
+				if (checkWordAcrossComplete(box, currentSide)) {
+					checkWordDownComplete(box, currentSide);
+					complete = true;
+				}
+			}
+			else if (currentWord.direction === 'down') {
+				if (checkWordDownComplete(box, currentSide)) {
+					checkWordAcrossComplete(box, currentSide);
+					complete = true;
+				}
+			}
 	
-		if (currentWord.direction === 'across') {
-			if (checkWordAcrossComplete(box, currentSide)) {
-				checkWordDownComplete(box, currentSide);
-				complete = true;
-			}
-		}
-		else if (currentWord.direction === 'down') {
-			if (checkWordDownComplete(box, currentSide)) {
-				checkWordAcrossComplete(box, currentSide);
-				complete = true;
-			}
-		}
-
-		checkingWord = false;
+			checkingWord = false;
+		}, 75);
 	}
 }
 

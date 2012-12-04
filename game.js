@@ -144,7 +144,7 @@ module.exports = function(User, Crossword, Room, http, io){
           function(err, usedCrossword){
             console.log(usedCrossword);
             // Make sure crossword isn't used already and it is the right size
-            if (usedCrossword.length < 1 && game.usedDates[obj.date] === undefined && obj.size.rows === 15 ) {
+            if (!err && usedCrossword.length < 1 && game.usedDates[obj.date] === undefined && obj.size.rows === 15 ) {
                 var isValid = true;
                 // Loop through and check for invalid letters
                 for (i=0; i < obj.grid.length; i++){
@@ -177,8 +177,14 @@ module.exports = function(User, Crossword, Room, http, io){
   };
 
   game.findIndexByClue = function(crossword, clue){
+  	if (clue){
     var clueId = parseInt(clue.split('.')[0]);
-    return crossword.gridnums.indexOf(clueId);
+    	return crossword.gridnums.indexOf(clueId);
+    }
+    else {
+    	console.log('Clue not found.');
+	    return false;
+    }
   };
 
   game.updateWord = function(err, saved, count){
@@ -215,12 +221,17 @@ module.exports = function(User, Crossword, Room, http, io){
             var userDidFinish = false;
             var i = game.findIndexByClue(crossword, crossword.across[data.index]);
             
+            var guessIndex = 0;
+            
             for (var l = data.guess.length+i; i < l + 1; i++){
               if (crossword.correct[i] == 0) {
                 crossword.correct[i] = 1;
                 crossword.markModified('correct.' + i);
+                crossword.guessed[i] = crossword.answers.across[data.index][guessIndex];
+                crossword.markModified('guessed.' + i);
                 userDidFinish = true;
               }
+              guessIndex++;
             }
 
             if (userDidFinish){
@@ -252,12 +263,17 @@ module.exports = function(User, Crossword, Room, http, io){
             var userDidFinish = false;
             var i = game.findIndexByClue(crossword, crossword.down[data.index]);
             
+            var guessIndex = 0;
+            
             for (var l = data.guess.length*15+i; i < l; i+=15){
               if (crossword.correct[i] == 0){
                 crossword.correct[i] = 1;
                 crossword.markModified('correct.' + i);
+                crossword.guessed[i] = crossword.answers.down[data.index][guessIndex];
+                crossword.markModified('guessed.' + i);
                 userDidFinish = true;
               }
+              guessIndex++;
             }
 
             if (userDidFinish){
@@ -292,22 +308,31 @@ module.exports = function(User, Crossword, Room, http, io){
                 user.save(function(err, save, count) {
                   console.log('user score updated.');
                   
-                  // update the list of users in chat, client-side
-                  User.find({online: true, currentRoom: user.currentRoom}, function(err, users) {
-                    io.sockets.in(user.currentRoom).emit('updateusers', users);
+                  var roomUsers = [];
+		          var sockets = io.sockets.in(data.roomId).sockets;
+		          for (var socketId in sockets) {
+			        roomUsers.push(sockets[socketId].username);
+		          }
+		            
+		          // update the list of users in chat, client-side
+		          User.find({'username': { $in: roomUsers}}, function(err, users) {
+		            // update the list of users in chat, client-side
+			        io.sockets.in(data.roomId).emit('updateusers', users);
+			        // if the crossword is finished, load a new one
                     if (crossword.correct.indexOf(0) === -1) {
                       console.log('side complete');
                       game.getPuzzle(data.side, data.roomId);
                     }
-                  });
+		          });
                 });
-            }
+              }
           });
         }
 
         crossword.save(function(err, save, count) {
           if (!err && count > 0) {
          	console.log(data);
+         	data.direction = direction;
             io.sockets.in(data.roomId).emit('guessresults', {data: data, result: result});
           }
         });

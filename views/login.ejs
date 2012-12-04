@@ -35,7 +35,7 @@
                     <form id="register" action="/register" method="post">
                         <fieldset class="form-panel">
                             <h3>New User</h3>
-                            <h5 class="subheader header">What's your name?</h5>
+                            <h5 class="subheader header">What is your name?</h5>
                             <input type="text" name="username" placeholder="username" class="username" />
                             <input type="password" name="password" placeholder="password" class="password" />
                             <blockquote class="password-help hidden">
@@ -49,5 +49,16 @@
         </section>
         <script src="http://code.jquery.com/jquery.min.js"></script>
         <script src="scripts/login.js"></script>
+        <script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-36674696-1']);
+		  _gaq.push(['_trackPageview']);
+		
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
     </body>
 </html>
