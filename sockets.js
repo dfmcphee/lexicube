@@ -22,10 +22,38 @@ module.exports = function(User, Crossword, Room, game, io){
       });
   }
   
+  var sides = ["front", "back", "left", "right", "top", "bottom"];
+  
   // Create a new room if none exist
   Room.find(function(err, rooms){
 	if (!err && rooms && rooms.length < 1) {
 		createRoom();
+	}
+	else {
+		for (var roomIndex=0; roomIndex < rooms.length; roomIndex++) {
+			console.log("Checking room " + rooms[roomIndex]._id + " for nulls.");
+			for (var sideIndex=0; sideIndex < sides.length; sideIndex++) {
+				console.log("Checking " + sides[sideIndex] + " for nulls.");
+				Crossword.findById(rooms[roomIndex][sides[sideIndex]], function(err, crossword) {
+					for (var i=0; i < crossword.guessed.length; i++) {
+						if (crossword.guess === null || crossword.guess === "null") {
+							console.log("Null found.");
+							crossword.correct[i] = 0;
+					        crossword.markModified('correct.' + i);
+					        crossword.guessed[i] = '';
+					        crossword.markModified('guessed.' + i);
+				        }
+			        }
+			        
+			        crossword.save(function(err, save, count) {
+			          if (!err && count > 0) {
+			          	console.log("Null cleared.");
+			         	console.log(data);
+			          }
+			        });
+			    });
+			}
+		 }
 	}
   });
   
@@ -186,7 +214,7 @@ module.exports = function(User, Crossword, Room, game, io){
 	        if (crossword.correct[data.index] === 0) {
 			    crossword.guessed[data.index] = data.letter;
 		        
-		        crossword.markModified('guessed.' + data.index);
+		        crossword.markModified('guessed.' + data.letterIndex);
 		
 		        crossword.save(function ( err, saved, count ){
 		          if (!err && count > 0) {

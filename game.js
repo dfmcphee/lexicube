@@ -146,6 +146,7 @@ module.exports = function(User, Crossword, Room, http, io){
             // Make sure crossword isn't used already and it is the right size
             if (!err && usedCrossword.length < 1 && game.usedDates[obj.date] === undefined && obj.size.rows === 15 ) {
                 var isValid = true;
+                
                 // Loop through and check for invalid letters
                 for (i=0; i < obj.grid.length; i++){
                   if (obj.grid[i].length > 1) {
@@ -201,7 +202,7 @@ module.exports = function(User, Crossword, Room, http, io){
 
   // Checks if a guess is correct or not
   game.checkWord = function(data){
-    if (!data || !data.index){
+    if (!data || !data.wordIndex){
       console.log('error');
       return;
     }
@@ -217,17 +218,17 @@ module.exports = function(User, Crossword, Room, http, io){
         if (direction === 'across') {
         
           // If guess is correct
-          if (data.guess.toUpperCase() === crossword.answers.across[data.index]) {
+          if (data.guess.toUpperCase() === crossword.answers.across[data.wordIndex]) {
             var userDidFinish = false;
-            var i = game.findIndexByClue(crossword, crossword.across[data.index]);
+            var i = game.findIndexByClue(crossword, crossword.across[data.wordIndex]);
             
             var guessIndex = 0;
             
-            for (var l = data.guess.length+i; i < l + 1; i++){
-              if (crossword.correct[i] == 0) {
+            for (var l = data.guess.length+i; i < l; i++){
+              if (crossword.correct[i] == 0 && crossword.answers.across[data.wordIndex][guessIndex] !== null) {
                 crossword.correct[i] = 1;
                 crossword.markModified('correct.' + i);
-                crossword.guessed[i] = crossword.answers.across[data.index][guessIndex];
+                crossword.guessed[i] = crossword.answers.across[data.wordIndex][guessIndex];
                 crossword.markModified('guessed.' + i);
                 userDidFinish = true;
               }
@@ -245,7 +246,7 @@ module.exports = function(User, Crossword, Room, http, io){
           // If not correct, clear guess
           else {
             result = 'incorrect';
-            var i = game.findIndexByClue(crossword, crossword.across[data.index]);
+            var i = game.findIndexByClue(crossword, crossword.across[data.wordIndex]);
             for (var l = data.guess.length+i; i < l; i++) {
               if (crossword.correct[i] !== 1){
                 crossword.guessed[i] = '';
@@ -259,17 +260,17 @@ module.exports = function(User, Crossword, Room, http, io){
         else {
         
           // If guess is correct
-          if (data.guess.toUpperCase() === crossword.answers.down[data.index]) {
+          if (data.guess.toUpperCase() === crossword.answers.down[data.wordIndex]) {
             var userDidFinish = false;
-            var i = game.findIndexByClue(crossword, crossword.down[data.index]);
+            var i = game.findIndexByClue(crossword, crossword.down[data.wordIndex]);
             
             var guessIndex = 0;
             
             for (var l = data.guess.length*15+i; i < l; i+=15){
-              if (crossword.correct[i] == 0){
+              if (crossword.correct[i] == 0 && crossword.answers.down[data.wordIndex][guessIndex] !== null){
                 crossword.correct[i] = 1;
                 crossword.markModified('correct.' + i);
-                crossword.guessed[i] = crossword.answers.down[data.index][guessIndex];
+                crossword.guessed[i] = crossword.answers.down[data.wordIndex][guessIndex];
                 crossword.markModified('guessed.' + i);
                 userDidFinish = true;
               }
@@ -278,7 +279,7 @@ module.exports = function(User, Crossword, Room, http, io){
 
             if (userDidFinish){
               result = 'correct';
-              data.guess = crossword.answers.down[data.index];
+              data.guess = crossword.answers.down[data.wordIndex];
             } else {
               result = 'cheating';
             }
@@ -287,7 +288,7 @@ module.exports = function(User, Crossword, Room, http, io){
           // If not correct, clear guess
           else {
             result = 'incorrect';
-            var i = game.findIndexByClue(crossword, crossword.down[data.index]);
+            var i = game.findIndexByClue(crossword, crossword.down[data.wordIndex]);
             for (var l = data.guess.length*15+i; i < l; i+=15){
               if (crossword.correct[i] !== 1){
                 crossword.guessed[i] = '';

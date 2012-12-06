@@ -79,7 +79,7 @@ socket.on('updategrid', function(data, room, side) {
 });
 
 socket.on('updateletter', function(data) {
-	$('#' + data.side + ' .square[data-grid-index="' + data.index + '"] .letter').html(data.letter);
+	$('#' + data.side + ' .square[data-grid-index="' + data.letterIndex + '"] .letter').html(data.letter);
 });
 
 socket.on('refreshuser', function(data) {
@@ -96,12 +96,13 @@ socket.on('guessresults', function(data) {
 		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
 		
 		//var word = getWord(firstSquare, data.data.direction);
-		
-		$('#' + data.data.side + ' [data-word-' + data.data.direction + '="' + data.data.index + '"]').each(function(index, square){
-			if (data.data.guess[index] !== null) {
+		var i = 0;
+		$('#' + data.data.side + ' [data-word-' + data.data.direction + '="' + data.data.wordIndex + '"]').each(function(index, square){
+			if (data.data.guess[i] !== null) {
 				$(square).find('.letter').addClass('correctWord');
-				$(square).find('.letter').html(data.data.guess[index]);
+				$(square).find('.letter').html(data.data.guess[i]);
 			}
+			i++;
 		});
 
 		//play correct sound
@@ -112,7 +113,7 @@ socket.on('guessresults', function(data) {
 		console.log(data);
 		var firstSquare = $('#' + data.data.side + ' .square[data-grid-index="' + data.data.firstIndex + '"]').first();
 		
-		$('#' + data.data.side + ' [data-word-' + data.data.direction + '="' + data.data.index + '"]').each(function(index, square) {
+		$('#' + data.data.side + ' [data-word-' + data.data.direction + '="' + data.data.wordIndex + '"]').each(function(index, square) {
 			$(square).find('.letter:not(.correctWord)').html('');
 		});
 
@@ -215,7 +216,7 @@ function sendLetter(e) {
 		// add the letter to the current box
 		socket.emit('sendletter', {
 			letter:letter,
-			index:$(box).attr('data-grid-index'),
+			letterIndex:$(box).attr('data-grid-index'),
 			firstIndex:$(currentWord.squares[0]).attr('data-grid-index'),
 			side: currentSide, 
 			roomId: roomId, 
@@ -250,7 +251,7 @@ function checkWordAcrossComplete(box, currentSide) {
 	
 	$('#' + currentSide + ' [data-word-across="' + wordAcross + '"]').each(function(index, cell){
 		value = $(cell).find('.letter').html();
-		if (value === '') {
+		if (value === '' || value == null) {
 			acrossFinished = false;
 		}
 		else {
@@ -262,7 +263,7 @@ function checkWordAcrossComplete(box, currentSide) {
 		socket.emit('checkword', {
 			guess: guess,
 			direction: 'across',
-			index: wordAcross,
+			wordIndex: wordAcross,
 			side: currentSide, 
 			roomId: roomId, 
 			crosswordId: sides[currentSide],
@@ -281,7 +282,7 @@ function checkWordDownComplete(box, currentSide) {
 	
 	$('#' + currentSide + ' [data-word-down="' + wordDown + '"]').each(function(index, cell){
 		value = $(cell).find('.letter').html();
-		if (value === '') {
+		if (value === '' || value == null) {
 			downFinished = false;
 		}
 		else {
@@ -293,7 +294,7 @@ function checkWordDownComplete(box, currentSide) {
 		socket.emit('checkword', {
 			guess: guess,
 			direction: 'down',
-			index: wordDown,
+			wordIndex: wordDown,
 			side: currentSide, 
 			roomId: roomId, 
 			crosswordId: sides[currentSide],
