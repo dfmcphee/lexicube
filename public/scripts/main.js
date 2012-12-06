@@ -98,10 +98,8 @@ socket.on('guessresults', function(data) {
 		//var word = getWord(firstSquare, data.data.direction);
 		var i = 0;
 		$('#' + data.data.side + ' [data-word-' + data.data.direction + '="' + data.data.wordIndex + '"]').each(function(index, square){
-			if (data.data.guess[i] !== null) {
-				$(square).find('.letter').addClass('correctWord');
-				$(square).find('.letter').html(data.data.guess[i]);
-			}
+			$(square).find('.letter').addClass('correctWord');
+			$(square).find('.letter').html(data.data.guess[i]);
 			i++;
 		});
 

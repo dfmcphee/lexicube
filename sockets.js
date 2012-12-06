@@ -36,7 +36,7 @@ module.exports = function(User, Crossword, Room, game, io){
 				console.log("Checking " + sides[sideIndex] + " for nulls.");
 				Crossword.findById(rooms[roomIndex][sides[sideIndex]], function(err, crossword) {
 					for (var i=0; i < crossword.guessed.length; i++) {
-						if (crossword.guess === null || crossword.guess === "null") {
+						if (crossword.guessed[i] === null || crossword.guessed[i] === "null") {
 							console.log("Null found.");
 							crossword.correct[i] = 0;
 					        crossword.markModified('correct.' + i);
@@ -45,10 +45,14 @@ module.exports = function(User, Crossword, Room, game, io){
 				        }
 			        }
 			        
+			        while (crossword.correct.length > 225) {
+				        crossword.correct.pop();
+				        crossword.markModified('correct');
+			        }
+			        
 			        crossword.save(function(err, save, count) {
 			          if (!err && count > 0) {
 			          	console.log("Null cleared.");
-			         	console.log(data);
 			          }
 			        });
 			    });
@@ -113,6 +117,7 @@ module.exports = function(User, Crossword, Room, game, io){
 
               Crossword.findById(room.left, function(err, crossword){
                 socket.emit('updategrid', crossword, socket.roomId, crossword._id);
+                console.log(crossword.correct.length);
                 if (crossword.correct.indexOf(0) === -1) {
 					console.log('side complete');
 					game.getPuzzle('left', socket.roomId);
